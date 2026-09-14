@@ -216,6 +216,42 @@
             flex-shrink: 0;
         }
 
+        /* a pending build step: gold card, pointing down, gently nudging */
+        .next-card.is-step {
+            background: linear-gradient(120deg, rgba(232, 180, 76, .22), rgba(232, 180, 76, .07));
+            border-color: rgba(232, 180, 76, .45);
+        }
+
+        .next-card.is-step .tag {
+            color: #f0cd85;
+        }
+
+        .next-card.is-step .arrow {
+            transform: rotate(90deg);
+            animation: nudge 1.4s ease-in-out infinite;
+        }
+
+        @keyframes nudge {
+
+            0%,
+            100% {
+                translate: 0 0;
+            }
+
+            50% {
+                translate: 0 4px;
+            }
+        }
+
+        .flash.d {
+            left: 0;
+            right: 0;
+            width: auto;
+            top: auto;
+            height: 45%;
+            background: linear-gradient(0deg, rgba(232, 180, 76, .25), transparent);
+        }
+
         /* ── jump grid ── */
         .grid {
             flex-shrink: 0;
@@ -269,6 +305,11 @@
         .hint .r {
             color: rgba(232, 180, 76, .75);
             border-color: rgba(232, 180, 76, .3);
+        }
+
+        .hint .d {
+            grid-column: 1 / -1;
+            padding: 7px 0;
         }
 
         /* tap feedback flash */
@@ -405,6 +446,7 @@
 
     <div class="flash l" id="flashL"></div>
     <div class="flash r" id="flashR"></div>
+    <div class="flash d" id="flashD"></div>
 
     <div class="bar">
         <div class="status"><span class="led" id="led"></span><span id="statusText">กำลังเชื่อมต่อ…</span></div>
@@ -422,10 +464,10 @@
         <p id="script">—</p>
     </div>
 
-    <div class="next-card">
-        <div class="tag">ถัดไป</div>
+    <div class="next-card" id="nextCard">
+        <div class="tag" id="nextTag">ถัดไป</div>
         <div class="nx" id="nextTitle">—</div>
-        <div class="arrow">›</div>
+        <div class="arrow" id="nextArrow">›</div>
     </div>
 
     <div class="grid" id="grid"></div>
@@ -433,6 +475,7 @@
     <div class="hint">
         <span>‹ แตะซ้าย · ย้อน</span>
         <span class="r">แตะขวา · ถัดไป ›</span>
+        <span class="d">▾ ปัดลง · เผยทีละจังหวะ &nbsp;·&nbsp; ปัดขึ้น · ซ่อน</span>
     </div>
 
     <div class="sheet" id="sheet" hidden>
@@ -463,6 +506,23 @@
         });
         const cells = $('grid').querySelectorAll('button');
 
+        let curStep = 0;
+        const stepsOf = i => (SLIDES[i].steps || []).length;
+
+        function renderNext() {
+            const steps = SLIDES[cur].steps || [];
+            const card = $('nextCard');
+            if (curStep < steps.length) {
+                card.classList.add('is-step');
+                $('nextTag').textContent = 'ปัดลง ' + (curStep + 1) + '/' + steps.length;
+                $('nextTitle').textContent = steps[curStep];
+            } else {
+                card.classList.remove('is-step');
+                $('nextTag').textContent = 'ถัดไป';
+                $('nextTitle').textContent = cur + 1 < total ? SLIDES[cur + 1].title : 'จบการนำเสนอ';
+            }
+        }
+
         function render() {
             const s = SLIDES[cur];
             $('idx').textContent = (cur + 1) + '/' + total;
@@ -470,7 +530,7 @@
             $('script').textContent = s.script;
             $('cue').hidden = !s.cue;
             if (s.cue) $('cue').textContent = s.cue;
-            $('nextTitle').textContent = cur + 1 < total ? SLIDES[cur + 1].title : 'จบการนำเสนอ';
+            renderNext();
             cells.forEach((c, i) => c.classList.toggle('on', i === cur));
             $('scriptWrap').scrollTop = 0;
         }
@@ -478,10 +538,11 @@
         const sync = DeckSync.create({
             role: 'ctrl',
             onMessage(msg) {
-                if (typeof msg.slide === 'number' && msg.slide !== cur) {
-                    cur = Math.max(0, Math.min(total - 1, msg.slide));
-                    render();
-                }
+                if (typeof msg.slide !== 'number') return;
+                const slide = Math.max(0, Math.min(total - 1, msg.slide));
+                const step = Math.max(0, Math.min(stepsOf(slide), msg.step || 0));
+                if (slide !== cur) { cur = slide; curStep = step; render(); }
+                else if (step !== curStep) { curStep = step; renderNext(); }
             },
             onStatus(st) {
                 $('led').classList.toggle('on', st.lan || st.cloud);
@@ -496,26 +557,41 @@
         function go(n) {
             if (n < 0 || n >= total || n === cur) return;
             cur = n;
+            curStep = 0;
             render();
             if (navigator.vibrate) navigator.vibrate(10);
-            sync.send({ type: 'goto', slide: cur });
+            sync.send({ type: 'goto', slide: cur, step: 0 });
         }
 
-        function flash(left) {
-            const el = left ? $('flashL') : $('flashR');
+        function step(delta) {
+            const next = curStep + delta;
+            if (next < 0 || next > stepsOf(cur)) return;
+            curStep = next;
+            renderNext();
+            if (navigator.vibrate) navigator.vibrate(delta > 0 ? [8, 40, 8] : 8);
+            sync.send({ type: 'goto', slide: cur, step: curStep });
+            flashEl($('flashD'));
+        }
+
+        function flashEl(el) {
             el.classList.add('go');
             setTimeout(() => el.classList.remove('go'), 60);
         }
+        const flash = left => flashEl(left ? $('flashL') : $('flashR'));
 
-        // ── tap anywhere: right half advances, left half goes back ──
-        // a tap that scrolls or lands on a control is ignored, so the
-        // script can still be scrolled and the grid still works.
+        // ── gestures ──
+        // tap left/right  = change slide
+        // swipe down/up   = reveal / hide the next build step
+        // A vertical drag that starts inside a script long enough to scroll is left
+        // alone, so reading the script never fires a reveal by accident.
         const INTERACTIVE = 'button, input, a, .sheet, .grid';
-        let sx = 0, sy = 0, moved = false;
+        let sx = 0, sy = 0, moved = false, startedInScroll = false;
 
         document.addEventListener('touchstart', e => {
             const t = e.touches[0];
             sx = t.clientX; sy = t.clientY; moved = false;
+            const sc = e.target.closest && e.target.closest('.script');
+            startedInScroll = !!(sc && sc.scrollHeight > sc.clientHeight + 4);
         }, { passive: true });
 
         document.addEventListener('touchmove', e => {
@@ -524,11 +600,27 @@
         }, { passive: true });
 
         document.addEventListener('touchend', e => {
-            if (moved) return;
             if (e.target.closest && e.target.closest(INTERACTIVE)) return;
-            const left = e.changedTouches[0].clientX < window.innerWidth * 0.38;
+            const t = e.changedTouches[0];
+            const dx = t.clientX - sx, dy = t.clientY - sy;
+
+            if (!startedInScroll && Math.abs(dy) > 50 && Math.abs(dy) > Math.abs(dx) * 1.4) {
+                step(dy > 0 ? 1 : -1);
+                return;
+            }
+            if (moved) return;
+            const left = t.clientX < window.innerWidth * 0.38;
             flash(left);
             go(cur + (left ? -1 : 1));
+        });
+
+        // desktop testing: arrow keys mirror the gestures
+        document.addEventListener('keydown', e => {
+            if (e.target.matches && e.target.matches('input')) return;
+            if (e.key === 'ArrowDown') { e.preventDefault(); step(1); }
+            if (e.key === 'ArrowUp') { e.preventDefault(); step(-1); }
+            if (e.key === 'ArrowRight') { e.preventDefault(); go(cur + 1); }
+            if (e.key === 'ArrowLeft') { e.preventDefault(); go(cur - 1); }
         });
 
         // desktop / testing
