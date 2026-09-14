@@ -1698,16 +1698,20 @@
                             const want = p.order < target;
                             if (want && p.start === undefined) {
                                 // sprout in a wave spreading out from the centre, each plant a beat apart
-                                p.start = S.clock + Math.abs(p.x / st.W - .5) * 1.6 + p.order * .35;
+                                p.start = S.clock + Math.abs(p.x / st.W - .5) * 1.4 + p.order * .25;
                             } else if (!want && p.start !== undefined) {
                                 p.start = undefined;
                             }
-                            p.vis = p.start === undefined ? Math.max(0, p.vis - st.dt * 2) : clamp((S.clock - p.start) / 1.3);
-                            if (p.vis <= 0) continue;
-                            // overshoot a little, then settle, like a stem springing up
-                            const v = p.vis, s = 1 + 2.2 * Math.pow(v - 1, 3) + 1.2 * Math.pow(v - 1, 2);
-                            grown(ctx, p, t, col, Math.max(0, s) * clamp(st.g * 1.5), wind(p.x, t) + (1 - v) * .35 * Math.sin(v * 9));
+                            // smooth velocity-eased progress: never jumps, even when a step is reversed mid-growth
+                            const goal = p.start === undefined ? 0 : clamp((S.clock - p.start) / 2.2);
+                            p.vis += (goal - p.vis) * Math.min(1, st.dt * (goal < p.vis ? 2.5 : 6));
+                            if (p.vis <= .002) continue;
+                            const v = p.vis, e = v * v * v * (v * (v * 6 - 15) + 10); // smootherstep
+                            ctx.globalAlpha = Math.min(1, v * 2.5);
+                            // grows from a lean toward upright, so the stem seems to unfurl
+                            grown(ctx, p, t, col, (.15 + .85 * e) * clamp(st.g * 1.5), wind(p.x, t) + (1 - e) * .25);
                         }
+                        ctx.globalAlpha = 1;
                     }
                 },
 
