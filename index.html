@@ -833,9 +833,11 @@
             padding: 12px;
         }
 
-        .pair-qr canvas {
+        .pair-qr canvas,
+        .pair-qr img {
             width: 100% !important;
             height: 100% !important;
+            display: block;
         }
 
         .pair-url {
@@ -1263,10 +1265,12 @@
                     const live = st.lan || st.cloud;
                     connectBtn.classList.toggle('connected', live);
                     connectBtn.textContent = live ? 'เชื่อมแล้ว' : 'เชื่อมมือถือ';
-                    document.getElementById('pairState').textContent = st.lan ? '● เชื่อมแล้วผ่าน Wi-Fi'
-                        : st.cloud ? '● เชื่อมแล้วผ่านอินเทอร์เน็ต'
+                    document.getElementById('pairState').textContent = st.lan ? '● พร้อมใช้งานผ่าน Wi-Fi'
+                        : st.cloud ? '● พร้อมใช้งาน — สแกน QR ได้เลย'
                             : st.cloudPending ? 'กำลังเชื่อมต่อ…'
                                 : 'ยังไม่ได้เชื่อม';
+                    // once the relay is up the manual button is just noise
+                    document.getElementById('cloudBtn').hidden = live;
                 }
             })
             : { send() { }, enableCloud: () => Promise.reject(new Error('sync.js missing')), disableCloud() { } };
@@ -1278,10 +1282,9 @@
         const ctrlUrl = onWeb ? baseDir + 'controller.html?room=' + room : null;
 
         document.getElementById('pairUrl').textContent = ctrlUrl || 'เปิดหน้านี้จากเว็บก่อน';
-        if (!onWeb) {
-            document.getElementById('pairHint').innerHTML =
-                'ไฟล์นี้เปิดจากเครื่องโดยตรง จึงยังจับคู่ไม่ได้<br>อัปโหลดขึ้นเว็บ แล้วเปิดลิงก์นั้นแทน';
-        }
+        document.getElementById('pairHint').innerHTML = onWeb
+            ? 'สแกน QR ด้วยมือถือ แล้วเชื่อมให้เอง<br>ใช้เน็ตมือถือได้ ไม่ต้องอยู่ Wi-Fi วงเดียวกัน'
+            : 'ไฟล์นี้เปิดจากเครื่องโดยตรง จึงยังจับคู่ไม่ได้<br>อัปโหลดขึ้นเว็บ แล้วเปิดลิงก์นั้นแทน';
 
         // hosted copy has no local server, so the internet relay is the only path — connect on its own
         if (onWeb) {
@@ -1293,20 +1296,29 @@
         function drawQr() {
             const box = document.getElementById('pairQr');
             if (!ctrlUrl || box.dataset.done) return;
-            const render = () => {
-                box.innerHTML = '';
-                const c = document.createElement('canvas');
-                box.appendChild(c);
-                window.QRCode.toCanvas(c, ctrlUrl, { width: 320, margin: 0 }, err => {
-                    if (err) box.innerHTML = '<span style="color:#888;font-size:12px">ใช้ลิงก์ด้านล่างแทน</span>';
-                    else box.dataset.done = '1';
-                });
+
+            const fail = () => {
+                box.innerHTML = '<span style="color:#666;font-size:12px;line-height:1.6">' +
+                    'แสดง QR ไม่ได้<br>พิมพ์ลิงก์ด้านล่างแทน</span>';
             };
+            const render = () => {
+                try {
+                    box.innerHTML = '';
+                    new window.QRCode(box, {
+                        text: ctrlUrl,
+                        width: 320,
+                        height: 320,
+                        correctLevel: window.QRCode.CorrectLevel.M
+                    });
+                    box.dataset.done = '1';
+                } catch (_) { fail(); }
+            };
+
             if (window.QRCode) return render();
             const s = document.createElement('script');
-            s.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
+            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
             s.onload = render;
-            s.onerror = () => { box.innerHTML = '<span style="color:#888;font-size:12px">ใช้ลิงก์ด้านล่างแทน</span>'; };
+            s.onerror = fail;
             document.head.appendChild(s);
         }
 
