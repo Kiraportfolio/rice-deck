@@ -10,7 +10,8 @@
     <title>รีโมทนำเสนอ</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap"
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap"
         rel="stylesheet">
     <style>
         *,
@@ -25,10 +26,10 @@
         :root {
             --bg: #000;
             --panel: rgba(255, 255, 255, .06);
-            --panel-hi: rgba(255, 255, 255, .12);
             --line: rgba(255, 255, 255, .10);
             --text: #f5f5f7;
             --muted: #86868b;
+            --dim: #5a5a5e;
             --gold: #e8b44c;
             --leaf: #74d68a;
             --ease: cubic-bezier(.22, .61, .36, 1);
@@ -37,18 +38,21 @@
         html,
         body {
             height: 100%;
+            overflow: hidden;
         }
 
         body {
             background: var(--bg);
             color: var(--text);
-            font-family: 'Noto Sans Thai', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Noto Sans Thai', 'Inter', -apple-system, BlinkMacSystemFont,
+                'Segoe UI', 'Leelawadee UI', Tahoma, sans-serif;
             -webkit-font-smoothing: antialiased;
             overscroll-behavior: none;
             display: flex;
             flex-direction: column;
-            padding: calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 14px);
-            gap: 12px;
+            padding: calc(env(safe-area-inset-top) + 10px) 14px calc(env(safe-area-inset-bottom) + 10px);
+            gap: 10px;
+            user-select: none;
         }
 
         .num {
@@ -56,29 +60,31 @@
             font-variant-numeric: tabular-nums;
         }
 
-        /* ── status bar ── */
+        /* ── status ── */
         .bar {
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 10px;
             flex-shrink: 0;
+            position: relative;
+            z-index: 5;
         }
 
         .status {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 13px;
+            gap: 7px;
+            font-size: 12px;
             font-weight: 500;
             color: var(--muted);
         }
 
         .led {
-            width: 8px;
-            height: 8px;
+            width: 7px;
+            height: 7px;
             border-radius: 50%;
-            background: #5a5a5e;
+            background: var(--dim);
             transition: background .3s, box-shadow .3s;
         }
 
@@ -92,105 +98,146 @@
             background: var(--panel);
             color: var(--muted);
             font-family: inherit;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 500;
-            padding: 8px 14px;
+            padding: 7px 13px;
             border-radius: 999px;
             cursor: pointer;
-        }
-
-        .pill-btn:active {
-            background: var(--panel-hi);
         }
 
         /* ── current slide ── */
         .now {
             flex-shrink: 0;
-            border: 1px solid var(--line);
-            border-radius: 20px;
-            background: linear-gradient(165deg, rgba(255, 255, 255, .07), rgba(255, 255, 255, .02));
-            padding: 16px 18px;
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            position: relative;
+            z-index: 2;
         }
 
         .now .idx {
-            font-size: 12px;
-            font-weight: 600;
-            letter-spacing: .06em;
+            font-size: 13px;
+            font-weight: 700;
             color: var(--gold);
+            flex-shrink: 0;
         }
 
         .now .title {
-            margin-top: 6px;
-            font-size: 23px;
+            font-size: 20px;
             font-weight: 700;
             letter-spacing: -.02em;
-            line-height: 1.25;
+            line-height: 1.2;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
-        /* ── notes ── */
-        .notes {
+        /* ── cue: what to DO ── */
+        .cue {
+            flex-shrink: 0;
+            display: flex;
+            gap: 9px;
+            padding: 10px 13px;
+            border-radius: 13px;
+            background: rgba(232, 180, 76, .10);
+            border: 1px solid rgba(232, 180, 76, .22);
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 1.5;
+            color: #f0cd85;
+            position: relative;
+            z-index: 2;
+        }
+
+        .cue::before {
+            content: '▸';
+            flex-shrink: 0;
+        }
+
+        .cue[hidden] {
+            display: none;
+        }
+
+        /* ── script: what to SAY ── */
+        .script {
             flex: 1;
-            min-height: 90px;
+            min-height: 0;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
-            border: 1px solid var(--line);
-            border-radius: 20px;
-            background: rgba(255, 255, 255, .03);
-            padding: 16px 18px;
+            padding: 2px 2px 4px;
+            position: relative;
+            z-index: 2;
         }
 
-        .notes h4 {
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: .1em;
-            color: #5a5a5e;
-            margin-bottom: 10px;
-        }
-
-        .notes p {
-            font-size: 16px;
+        .script p {
+            font-size: 19px;
             font-weight: 400;
-            line-height: 1.75;
-            color: #d2d2d7;
+            line-height: 1.85;
+            color: #e8e8ed;
+            text-wrap: pretty;
         }
 
-        .notes .next-up {
-            margin-top: 16px;
-            padding-top: 14px;
-            border-top: 1px solid var(--line);
-            font-size: 13px;
-            color: var(--muted);
+        /* ── next up: the thing you glance at ── */
+        .next-card {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 15px;
+            border-radius: 16px;
+            background: linear-gradient(120deg, rgba(255, 255, 255, .09), rgba(255, 255, 255, .03));
+            border: 1px solid var(--line);
+            position: relative;
+            z-index: 2;
         }
 
-        .notes .next-up b {
-            color: #a8a8ad;
+        .next-card .tag {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .1em;
+            color: var(--dim);
+            flex-shrink: 0;
+        }
+
+        .next-card .nx {
+            font-size: 17px;
             font-weight: 600;
+            letter-spacing: -.01em;
+            line-height: 1.25;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .next-card .arrow {
+            margin-left: auto;
+            font-size: 17px;
+            color: var(--gold);
+            flex-shrink: 0;
         }
 
         /* ── jump grid ── */
         .grid {
             flex-shrink: 0;
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 7px;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 4px;
+            position: relative;
+            z-index: 5;
         }
 
         .grid button {
-            aspect-ratio: 1.45;
-            border-radius: 13px;
+            height: 34px;
+            border-radius: 9px;
             border: 1px solid var(--line);
             background: var(--panel);
             color: var(--muted);
             font-family: 'Inter', sans-serif;
             font-variant-numeric: tabular-nums;
-            font-size: 15px;
+            font-size: 12px;
             font-weight: 600;
             cursor: pointer;
-            transition: background .25s var(--ease), color .25s var(--ease), transform .15s var(--ease);
-        }
-
-        .grid button:active {
-            transform: scale(.92);
+            transition: background .2s var(--ease), color .2s var(--ease);
         }
 
         .grid button.on {
@@ -199,46 +246,56 @@
             color: #1d1d1f;
         }
 
-        /* ── transport ── */
-        .transport {
+        /* ── tap hint ── */
+        .hint {
             flex-shrink: 0;
             display: grid;
-            grid-template-columns: 1fr 1.45fr;
-            gap: 10px;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--dim);
+            text-align: center;
+            position: relative;
+            z-index: 2;
         }
 
-        .transport button {
-            border: 1px solid var(--line);
-            border-radius: 20px;
-            font-family: inherit;
-            font-size: 18px;
-            font-weight: 600;
-            padding: 22px 0;
-            cursor: pointer;
-            transition: transform .15s var(--ease), background .25s var(--ease);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 9px;
+        .hint span {
+            padding: 9px 0;
+            border-radius: 11px;
+            border: 1px dashed rgba(255, 255, 255, .13);
         }
 
-        .transport button:active {
-            transform: scale(.96);
+        .hint .r {
+            color: rgba(232, 180, 76, .75);
+            border-color: rgba(232, 180, 76, .3);
         }
 
-        .transport button:disabled {
-            opacity: .3;
+        /* tap feedback flash */
+        .flash {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            width: 42%;
+            z-index: 1;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .35s var(--ease);
         }
 
-        #prev {
-            background: var(--panel);
-            color: var(--text);
+        .flash.l {
+            left: 0;
+            background: linear-gradient(90deg, rgba(255, 255, 255, .16), transparent);
         }
 
-        #next {
-            background: linear-gradient(165deg, #ffd978, var(--gold));
-            border-color: transparent;
-            color: #1d1d1f;
+        .flash.r {
+            right: 0;
+            background: linear-gradient(270deg, rgba(232, 180, 76, .22), transparent);
+        }
+
+        .flash.go {
+            opacity: 1;
+            transition-duration: 0s;
         }
 
         /* ── pairing sheet ── */
@@ -246,7 +303,7 @@
             position: fixed;
             inset: 0;
             z-index: 50;
-            background: rgba(0, 0, 0, .75);
+            background: rgba(0, 0, 0, .78);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             display: flex;
@@ -327,18 +384,18 @@
             cursor: pointer;
         }
 
-        @media (max-height: 680px) {
+        @media (max-height: 700px) {
+            .script p {
+                font-size: 16px;
+                line-height: 1.7;
+            }
+
             .now .title {
-                font-size: 19px;
+                font-size: 17px;
             }
 
-            .notes p {
-                font-size: 14px;
-                line-height: 1.6;
-            }
-
-            .transport button {
-                padding: 17px 0;
+            .next-card .nx {
+                font-size: 15px;
             }
         }
     </style>
@@ -346,33 +403,42 @@
 
 <body>
 
+    <div class="flash l" id="flashL"></div>
+    <div class="flash r" id="flashR"></div>
+
     <div class="bar">
         <div class="status"><span class="led" id="led"></span><span id="statusText">กำลังเชื่อมต่อ…</span></div>
         <button class="pill-btn" id="pairBtn">โหมดอินเทอร์เน็ต</button>
     </div>
 
     <div class="now">
-        <div class="idx num" id="idx">1 / 10</div>
+        <div class="idx num" id="idx">1/10</div>
         <div class="title" id="title">—</div>
     </div>
 
-    <div class="notes">
-        <h4>โน้ตผู้พูด</h4>
-        <p id="note">—</p>
-        <div class="next-up" id="nextUp"></div>
+    <div class="cue" id="cue"></div>
+
+    <div class="script" id="scriptWrap">
+        <p id="script">—</p>
+    </div>
+
+    <div class="next-card">
+        <div class="tag">ถัดไป</div>
+        <div class="nx" id="nextTitle">—</div>
+        <div class="arrow">›</div>
     </div>
 
     <div class="grid" id="grid"></div>
 
-    <div class="transport">
-        <button id="prev">‹ ก่อนหน้า</button>
-        <button id="next">ถัดไป ›</button>
+    <div class="hint">
+        <span>‹ แตะซ้าย · ย้อน</span>
+        <span class="r">แตะขวา · ถัดไป ›</span>
     </div>
 
     <div class="sheet" id="sheet" hidden>
         <div class="sheet-card">
             <h3>เชื่อมผ่านอินเทอร์เน็ต</h3>
-            <p>ใช้เมื่อมือถือกับคอมไม่ได้อยู่ Wi-Fi วงเดียวกัน<br>ใส่รหัสห้องที่แสดงบนจอนำเสนอ</p>
+            <p>ใส่รหัสห้องที่แสดงบนจอนำเสนอ</p>
             <input id="roomInput" maxlength="6" placeholder="ABC123" autocomplete="off" autocapitalize="characters"
                 spellcheck="false">
             <button class="go" id="joinBtn">เชื่อมต่อ</button>
@@ -389,11 +455,9 @@
 
         const $ = id => document.getElementById(id);
 
-        // ── jump grid ──
         SLIDES.forEach((s, i) => {
             const b = document.createElement('button');
             b.textContent = s.n;
-            b.title = s.title;
             b.addEventListener('click', () => go(i));
             $('grid').appendChild(b);
         });
@@ -401,18 +465,16 @@
 
         function render() {
             const s = SLIDES[cur];
-            $('idx').textContent = (cur + 1) + ' / ' + total;
+            $('idx').textContent = (cur + 1) + '/' + total;
             $('title').textContent = s.title;
-            $('note').textContent = s.note;
-            $('nextUp').innerHTML = cur + 1 < total
-                ? 'ถัดไป · <b>' + SLIDES[cur + 1].title + '</b>'
-                : 'สไลด์สุดท้าย';
+            $('script').textContent = s.script;
+            $('cue').hidden = !s.cue;
+            if (s.cue) $('cue').textContent = s.cue;
+            $('nextTitle').textContent = cur + 1 < total ? SLIDES[cur + 1].title : 'จบการนำเสนอ';
             cells.forEach((c, i) => c.classList.toggle('on', i === cur));
-            $('prev').disabled = cur === 0;
-            $('next').disabled = cur === total - 1;
+            $('scriptWrap').scrollTop = 0;
         }
 
-        // ── sync ──
         const sync = DeckSync.create({
             role: 'ctrl',
             onMessage(msg) {
@@ -422,8 +484,7 @@
                 }
             },
             onStatus(st) {
-                const live = st.lan || st.cloud;
-                $('led').classList.toggle('on', live);
+                $('led').classList.toggle('on', st.lan || st.cloud);
                 $('statusText').textContent = st.lan ? 'เชื่อมแล้ว · Wi-Fi'
                     : st.cloud ? 'เชื่อมแล้ว · อินเทอร์เน็ต'
                         : st.cloudPending ? 'กำลังเชื่อมต่อ…'
@@ -433,25 +494,51 @@
         });
 
         function go(n) {
-            if (n < 0 || n >= total) return;
+            if (n < 0 || n >= total || n === cur) return;
             cur = n;
             render();
-            if (navigator.vibrate) navigator.vibrate(8);
+            if (navigator.vibrate) navigator.vibrate(10);
             sync.send({ type: 'goto', slide: cur });
         }
 
-        $('next').addEventListener('click', () => go(cur + 1));
-        $('prev').addEventListener('click', () => go(cur - 1));
+        function flash(left) {
+            const el = left ? $('flashL') : $('flashR');
+            el.classList.add('go');
+            setTimeout(() => el.classList.remove('go'), 60);
+        }
 
-        // volume-style swipe on the notes area
-        let ty = 0, tx = 0;
+        // ── tap anywhere: right half advances, left half goes back ──
+        // a tap that scrolls or lands on a control is ignored, so the
+        // script can still be scrolled and the grid still works.
+        const INTERACTIVE = 'button, input, a, .sheet, .grid';
+        let sx = 0, sy = 0, moved = false;
+
         document.addEventListener('touchstart', e => {
-            tx = e.touches[0].clientX; ty = e.touches[0].clientY;
+            const t = e.touches[0];
+            sx = t.clientX; sy = t.clientY; moved = false;
         }, { passive: true });
+
+        document.addEventListener('touchmove', e => {
+            const t = e.touches[0];
+            if (Math.abs(t.clientX - sx) > 12 || Math.abs(t.clientY - sy) > 12) moved = true;
+        }, { passive: true });
+
         document.addEventListener('touchend', e => {
-            const dx = tx - e.changedTouches[0].clientX;
-            const dy = Math.abs(ty - e.changedTouches[0].clientY);
-            if (Math.abs(dx) > 60 && dy < 50) go(cur + (dx > 0 ? 1 : -1));
+            if (moved) return;
+            if (e.target.closest && e.target.closest(INTERACTIVE)) return;
+            const left = e.changedTouches[0].clientX < window.innerWidth * 0.38;
+            flash(left);
+            go(cur + (left ? -1 : 1));
+        });
+
+        // desktop / testing
+        document.addEventListener('click', e => {
+            if (e.pointerType === '' || !('ontouchstart' in window)) {
+                if (e.target.closest && e.target.closest(INTERACTIVE)) return;
+                const left = e.clientX < window.innerWidth * 0.38;
+                flash(left);
+                go(cur + (left ? -1 : 1));
+            }
         });
 
         // ── cloud pairing ──
@@ -472,7 +559,6 @@
         if (urlRoom) {
             $('roomInput').value = urlRoom;
             $('pairBtn').textContent = 'ห้อง ' + urlRoom;
-            // scanning the QR should just work — no extra tap to connect
             setTimeout(() => {
                 if (!sync.status.lan) {
                     sync.enableCloud(urlRoom)
