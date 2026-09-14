@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#1c3a1c">
+    <title>ข้าวพันธุ์พื้นเมืองไทย</title>
+    <meta name="description" content="แหล่งข้อมูลการอนุรักษ์ข้าวพันธุ์พื้นเมืองไทย สำหรับคนทั่วไปและนักวิจัย">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #1c3a1c;
+            --text: #f2f0ec;
+            --text-2: rgba(242, 240, 236, .35);
+            /* body copy needs more contrast than --text-2 to be readable at length */
+            --text-body: rgba(242, 240, 236, .76);
+            --gold: #a8822e;
+            --gold-soft: #c9a355;
+            --line: rgba(242, 240, 236, .12);
+            --ease: cubic-bezier(.4, 0, .2, 1);
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Sarabun', 'Leelawadee UI', Tahoma, sans-serif;
+            font-weight: 300;
+            -webkit-font-smoothing: antialiased;
+            overflow: hidden;
+        }
+
+        body.in-detail {
+            overflow: hidden !important;
+        }
+
+        a {
+            color: inherit;
+        }
+
+        button {
+            font: inherit;
+            color: inherit;
+        }
+
+        /* ───────── top bar ───────── */
+        .topbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 40;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: clamp(16px, 2.4vw, 34px) clamp(16px, 3vw, 48px);
+            pointer-events: none;
+        }
+
+        .topbar>* {
+            pointer-events: auto;
+        }
+
+        .brand {
+            text-decoration: none;
+            font-weight: 700;
+            font-size: clamp(16px, 1.3vw, 24px);
+            line-height: 1.4;
+            letter-spacing: .5px;
+        }
+
+        .brand small {
+            display: block;
+            font-weight: 300;
+            font-size: .6em;
+            letter-spacing: 1px;
+            color: var(--text-2);
+        }
+
+        .icon-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 1px solid rgba(242, 240, 236, .2);
+            background: rgba(0, 0, 0, .18);
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            transition: background .3s ease, border-color .3s ease;
+        }
+
+        .icon-btn:hover,
+        .icon-btn:focus-visible {
+            background: rgba(242, 240, 236, .1);
+            border-color: rgba(242, 240, 236, .45);
+            outline: none;
+        }
+
+        /* ───────── main scene ───────── */
+        .scene {
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+            background: radial-gradient(ellipse 90% 65% at 50% 100%, #2a5230 0%, var(--bg) 62%);
+        }
+
+        .scene-hint {
+            position: absolute;
+            top: clamp(92px, 15vh, 170px);
+            left: 0;
+            right: 0;
+            text-align: center;
+            padding: 0 16px;
+            pointer-events: none;
+        }
+
+        .scene-hint h1 {
+            font-weight: 700;
+            font-size: clamp(26px, 3.2vw, 60px);
+            line-height: 1.4;
+        }
+
+        .scene-hint p {
+            margin-top: 6px;
+            font-size: clamp(14px, 1.05vw, 20px);
+            letter-spacing: 1px;
+            color: var(--text-2);
+        }
+
+        .field {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 66vh;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: clamp(0px, .8vw, 22px);
+            padding: 0 clamp(12px, 3vw, 64px);
+        }
+
+        .ground {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 10vh;
+            background: linear-gradient(to top, rgba(0, 0, 0, .32), transparent);
+            pointer-events: none;
+        }
+
+        .plant {
+            --leafc: #6f9450;
+            --stemc: #8fad64;
+            --grainc: #cdb57a;
+            position: relative;
+            height: 100%;
+            width: min(15.5vw, 320px);
+            background: none;
+            border: 0;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .plant svg {
+            width: 100%;
+            height: 90%;
+            overflow: visible;
+            transition: filter .3s ease;
+        }
+
+        .leaf {
+            fill: var(--leafc);
+            transition: fill .3s ease;
+        }
+
+        .stem {
+            fill: none;
+            stroke: var(--stemc);
+            stroke-width: 3.2;
+            stroke-linecap: round;
+            transition: stroke .3s ease;
+        }
+
+        .stem.thin {
+            stroke-width: 1.8;
+        }
+
+        .grain {
+            fill: var(--grainc);
+            transition: fill .3s ease;
+        }
+
+        .p-leaves,
+        .p-stems {
+            transform-box: view-box;
+            transform-origin: 50% 100%;
+        }
+
+        .plant:hover,
+        .plant:focus-visible,
+        .plant.hot {
+            --leafc: var(--c);
+            --stemc: var(--l);
+            --grainc: var(--l);
+            outline: none;
+        }
+
+        .plant:hover svg,
+        .plant:focus-visible svg,
+        .plant.hot svg {
+            filter: drop-shadow(0 0 26px var(--glow));
+        }
+
+        .plant-name {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translate(-50%, 10px);
+            opacity: 0;
+            white-space: nowrap;
+            text-align: center;
+            pointer-events: none;
+            transition: opacity .3s ease, transform .3s ease;
+        }
+
+        .plant-name b {
+            display: block;
+            font-weight: 700;
+            font-size: clamp(15px, 1.25vw, 26px);
+            line-height: 1.45;
+        }
+
+        .plant-name span {
+            display: block;
+            font-size: clamp(11px, .8vw, 16px);
+            letter-spacing: 1px;
+            color: var(--text-2);
+        }
+
+        .plant:hover .plant-name,
+        .plant:focus-visible .plant-name,
+        .plant.hot .plant-name {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+
+        /* touch screens have no hover — names stay visible */
+        @media (hover: none) {
+            .plant-name {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+
+        /* ───────── detail pages ───────── */
+        .detail {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            background: var(--dbg, var(--bg));
+            --leafc: #7da35a;
+            --stemc: #a9c27d;
+            --grainc: #d8c38a;
+        }
+
+        .detail[hidden] {
+            display: none;
+        }
+
+        .d-top {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: clamp(14px, 2vw, 28px) clamp(16px, 3vw, 48px);
+            background: linear-gradient(to bottom, rgba(0, 0, 0, .3), transparent);
+        }
+
+        .d-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 20px 10px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(242, 240, 236, .22);
+            background: rgba(0, 0, 0, .24);
+            font-weight: 400;
+            font-size: 15px;
+            cursor: pointer;
+            transition: background .3s ease, border-color .3s ease;
+        }
+
+        .d-back:hover,
+        .d-back:focus-visible {
+            background: rgba(242, 240, 236, .12);
+            border-color: rgba(242, 240, 236, .45);
+            outline: none;
+        }
+
+        .d-hero {
+            min-height: min(80vh, 860px);
+            display: grid;
+            grid-template-columns: 1.1fr .9fr;
+            align-items: center;
+            gap: clamp(16px, 4vw, 80px);
+            padding: 0 clamp(16px, 6vw, 130px);
+            margin-top: -40px;
+        }
+
+        .d-kicker {
+            color: var(--gold-soft);
+            font-weight: 400;
+            letter-spacing: 2px;
+            font-size: clamp(13px, 1vw, 18px);
+        }
+
+        .d-hero h1 {
+            font-weight: 700;
+            font-size: clamp(40px, 6vw, 116px);
+            line-height: 1.3;
+            margin: 8px 0 20px;
+        }
+
+        .d-meta,
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .chip {
+            padding: 7px 15px;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, .22);
+            border: 1px solid rgba(242, 240, 236, .15);
+            font-size: clamp(13px, .95vw, 16px);
+            font-weight: 400;
+            line-height: 1.5;
+        }
+
+        .d-status {
+            margin-top: 24px;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            font-size: clamp(15px, 1.15vw, 20px);
+            font-weight: 400;
+            line-height: 1.6;
+        }
+
+        .d-status::before {
+            content: '';
+            flex-shrink: 0;
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: var(--gold-soft);
+            box-shadow: 0 0 0 5px rgba(201, 163, 85, .2);
+        }
+
+        .d-plant {
+            height: min(72vh, 760px);
+            display: flex;
+            justify-content: center;
+        }
+
+        .d-plant svg {
+            height: 100%;
+            width: auto;
+            max-width: 100%;
+            overflow: visible;
+            filter: drop-shadow(0 0 40px var(--glow));
+        }
+
+        @keyframes sway {
+            from {
+                transform: rotate(-2deg);
+            }
+
+            to {
+                transform: rotate(2.4deg);
+            }
+        }
+
+        @keyframes sway-soft {
+            from {
+                transform: rotate(-.9deg);
+            }
+
+            to {
+                transform: rotate(1.1deg);
+            }
+        }
+
+        .d-plant .p-stems {
+            animation: sway 6s ease-in-out infinite alternate;
+        }
+
+        .d-plant .p-leaves {
+            animation: sway-soft 7.5s ease-in-out infinite alternate;
+        }
+
+        /* field heroes — past (dense) and present (sparse) */
+        .f-hero {
+            position: relative;
+            min-height: min(86vh, 900px);
+            margin-top: -80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            overflow: hidden;
+            padding: clamp(110px, 16vh, 180px) 16px 0;
+        }
+
+        .f-field {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 58%;
+        }
+
+        .f-field svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .fp {
+            transform-box: fill-box;
+            transform-origin: 50% 100%;
+            animation: sway 5s ease-in-out infinite alternate;
+        }
+
+        .ghost {
+            opacity: .1;
+        }
+
+        .f-hero .d-title {
+            position: relative;
+            z-index: 2;
+        }
+
+        .f-big {
+            font-weight: 700;
+            font-size: clamp(76px, 14vw, 270px);
+            line-height: 1.1;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -2px;
+        }
+
+        .f-sub {
+            font-size: clamp(15px, 1.3vw, 24px);
+            font-weight: 400;
+            color: var(--text-body);
+            line-height: 1.6;
+        }
+
+        .d-body {
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: clamp(32px, 4vw, 70px) clamp(16px, 6vw, 130px) clamp(70px, 9vw, 140px);
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+            gap: clamp(12px, 1.5vw, 26px);
+        }
+
+        .card {
+            background: rgba(0, 0, 0, .22);
+            border: 1px solid var(--line);
+            border-radius: 22px;
+            padding: clamp(22px, 2.4vw, 40px);
+        }
+
+        .card-label {
+            display: block;
+            font-size: 12px;
+            letter-spacing: 2px;
+            color: var(--gold-soft);
+            font-weight: 400;
+            margin-bottom: 6px;
+        }
+
+        .card h2,
+        .card h3 {
+            font-weight: 700;
+            font-size: clamp(20px, 1.7vw, 32px);
+            line-height: 1.45;
+            margin-bottom: 14px;
+        }
+
+        .lead {
+            font-size: clamp(18px, 1.5vw, 28px);
+            font-weight: 400;
+            line-height: 1.6;
+        }
+
+        .list {
+            list-style: none;
+            display: grid;
+            gap: 12px;
+        }
+
+        .list li,
+        .t-what p,
+        .body-text {
+            line-height: 1.8;
+            color: var(--text-body);
+            font-size: clamp(15px, 1.1vw, 20px);
+        }
+
+        .list li {
+            position: relative;
+            padding-left: 22px;
+        }
+
+        .list li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: .9em;
+            width: 10px;
+            height: 1px;
+            background: var(--gold-soft);
+        }
+
+        .block {
+            margin-top: clamp(48px, 6vw, 96px);
+        }
+
+        .block:first-child {
+            margin-top: 0;
+        }
+
+        .block-head {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 18px;
+            align-items: baseline;
+            margin-bottom: clamp(18px, 2vw, 30px);
+        }
+
+        .block-num {
+            font-weight: 700;
+            color: var(--gold-soft);
+            font-size: clamp(14px, 1vw, 18px);
+            letter-spacing: 2px;
+        }
+
+        .block-head h2 {
+            font-weight: 700;
+            font-size: clamp(26px, 2.6vw, 50px);
+            line-height: 1.4;
+        }
+
+        .stance {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 14px;
+            padding: 13px 0;
+            border-top: 1px solid var(--line);
+            line-height: 1.75;
+            color: var(--text-body);
+            font-size: clamp(15px, 1.1vw, 19px);
+        }
+
+        .stance:first-of-type {
+            margin-top: 16px;
+        }
+
+        .stance b {
+            color: var(--text);
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .org-stat {
+            margin-top: 14px;
+            font-weight: 700;
+            font-size: clamp(22px, 2vw, 36px);
+            color: var(--gold-soft);
+            line-height: 1.4;
+        }
+
+        .org-link {
+            display: inline-block;
+            margin-top: 14px;
+            font-size: 14px;
+            color: var(--text-2);
+            text-decoration: none;
+            border-bottom: 1px solid var(--line);
+            transition: color .3s ease, border-color .3s ease;
+        }
+
+        .org-link:hover {
+            color: var(--text);
+            border-color: var(--text);
+        }
+
+        .cta {
+            grid-column: 1 / -1;
+            background: linear-gradient(120deg, rgba(168, 130, 46, .22), rgba(168, 130, 46, .06));
+            border-color: rgba(201, 163, 85, .35);
+        }
+
+        .cta-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+            gap: 22px;
+        }
+
+        .cta-row h4 {
+            font-weight: 400;
+            font-size: 13px;
+            letter-spacing: 2px;
+            color: var(--gold-soft);
+            margin-bottom: 10px;
+        }
+
+        /* timeline */
+        .timeline {
+            --pad: clamp(30px, 3vw, 46px);
+            position: relative;
+            list-style: none;
+            display: grid;
+            gap: clamp(22px, 2.4vw, 38px);
+            padding-left: var(--pad);
+            max-width: 920px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 10px;
+            bottom: 10px;
+            width: 1px;
+            background: linear-gradient(var(--gold-soft), rgba(242, 240, 236, .08));
+        }
+
+        .t-item {
+            position: relative;
+        }
+
+        .t-item::before {
+            content: '';
+            position: absolute;
+            left: calc(var(--pad) * -1 + 3px);
+            top: .62em;
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            background: var(--bg);
+            border: 2px solid var(--gold-soft);
+        }
+
+        .t-when {
+            color: var(--gold-soft);
+            font-weight: 700;
+            font-size: clamp(17px, 1.4vw, 26px);
+            line-height: 1.5;
+        }
+
+        .t-what {
+            margin-top: 4px;
+        }
+
+        .sources {
+            margin-top: clamp(40px, 4vw, 64px);
+            padding-top: 24px;
+            border-top: 1px solid var(--line);
+        }
+
+        .sources h3 {
+            font-size: 12px;
+            letter-spacing: 2px;
+            color: var(--text-2);
+            font-weight: 400;
+            margin-bottom: 14px;
+        }
+
+        .src {
+            display: inline-flex;
+            margin: 0 8px 8px 0;
+            padding: 7px 15px;
+            border-radius: 999px;
+            border: 1px solid rgba(242, 240, 236, .16);
+            text-decoration: none;
+            font-size: 14px;
+            line-height: 1.5;
+            transition: background .3s ease, border-color .3s ease;
+            word-break: break-all;
+        }
+
+        .src:hover,
+        .src:focus-visible {
+            background: rgba(242, 240, 236, .1);
+            border-color: rgba(242, 240, 236, .4);
+            outline: none;
+        }
+
+        /* colour veil used during the zoom into a detail page */
+        .veil {
+            position: fixed;
+            inset: 0;
+            z-index: 60;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* ───────── about / sources ───────── */
+        .about {
+            position: fixed;
+            inset: 0;
+            z-index: 80;
+            background: rgba(6, 14, 6, .74);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            overflow-y: auto;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: clamp(16px, 7vh, 90px) 16px;
+        }
+
+        .about[hidden] {
+            display: none;
+        }
+
+        .about-card {
+            position: relative;
+            width: min(780px, 100%);
+            background: #132813;
+            border: 1px solid var(--line);
+            border-radius: 26px;
+            padding: clamp(26px, 3.2vw, 48px);
+        }
+
+        .about-card h2 {
+            font-weight: 700;
+            font-size: clamp(24px, 2.2vw, 36px);
+            line-height: 1.4;
+            padding-right: 48px;
+        }
+
+        .about-card .body-text {
+            margin-top: 8px;
+        }
+
+        .about-group {
+            margin-top: 28px;
+        }
+
+        .about-group h3 {
+            font-size: 12px;
+            letter-spacing: 2px;
+            color: var(--gold-soft);
+            font-weight: 400;
+            margin-bottom: 12px;
+        }
+
+        .about-close {
+            position: absolute;
+            top: clamp(18px, 2.4vw, 32px);
+            right: clamp(18px, 2.4vw, 32px);
+        }
+
+        .disclaimer {
+            margin-top: 30px;
+            padding: 18px 20px;
+            border-radius: 16px;
+            background: rgba(0, 0, 0, .22);
+            font-size: 14px;
+            line-height: 1.8;
+            color: var(--text-body);
+        }
+
+        /* ───────── responsive ───────── */
+        @media (max-width: 1023px) {
+            body {
+                overflow-y: auto;
+            }
+
+            .scene {
+                position: relative;
+                min-height: 100vh;
+                overflow: visible;
+            }
+
+            .scene-hint {
+                position: relative;
+                top: auto;
+                padding: 104px 16px 8px;
+            }
+
+            .field {
+                position: relative;
+                height: auto;
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 30px 8px;
+                padding: 28px 16px 56px;
+            }
+
+            .plant {
+                width: 100%;
+                height: 40vh;
+                min-height: 260px;
+            }
+
+            .plant-name {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+
+            .ground {
+                display: none;
+            }
+
+            .d-hero {
+                grid-template-columns: 1fr;
+                margin-top: 0;
+                padding-top: 12px;
+                padding-bottom: 12px;
+            }
+
+            .d-plant {
+                height: 46vh;
+                order: -1;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .field {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .plant {
+                height: 34vh;
+                min-height: 230px;
+            }
+
+            .stance {
+                grid-template-columns: 1fr;
+                gap: 2px;
+            }
+        }
+
+        @media (min-width: 1920px) {
+            .field {
+                height: 70vh;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            .d-plant .p-stems,
+            .d-plant .p-leaves,
+            .fp {
+                animation: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="topbar">
+        <a class="brand" href="./">ข้าวพันธุ์พื้นเมืองไทย<small>แหล่งข้อมูลการอนุรักษ์</small></a>
+        <button class="icon-btn js-about" type="button" aria-label="เกี่ยวกับและแหล่งอ้างอิง">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+                stroke-linecap="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 11v5" />
+                <circle cx="12" cy="7.6" r=".7" fill="currentColor" />
+            </svg>
+        </button>
+    </header>
+
+    <main class="scene" id="scene">
+        <div class="scene-hint">
+            <h1>ต้นข้าวแต่ละต้น มีเรื่องเล่า</h1>
+            <p>แตะที่ต้นข้าวเพื่อสำรวจ</p>
+        </div>
+        <div class="field" id="field"></div>
+        <div class="ground"></div>
+    </main>
+
+    <section class="detail" id="detail" tabindex="-1" hidden></section>
+    <div class="veil" id="veil"></div>
+
+    <div class="about" id="about" role="dialog" aria-modal="true" aria-labelledby="aboutTitle" hidden>
+        <div class="about-card">
+            <button class="icon-btn about-close" type="button" aria-label="ปิด">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                    stroke-linecap="round" aria-hidden="true">
+                    <path d="M6 6l12 12M18 6L6 18" />
+                </svg>
+            </button>
+            <h2 id="aboutTitle">เกี่ยวกับเว็บนี้</h2>
+            <p class="body-text">รวบรวมเรื่องราวของข้าวพันธุ์พื้นเมืองไทย ทั้งที่มา คุณค่า และสถานการณ์ปัจจุบัน
+                เพื่อให้คนทั่วไปและนักวิจัยเข้าถึงข้อมูลได้ในที่เดียว</p>
+
+            <div class="about-group">
+                <h3>องค์กร</h3>
+                <a class="src" href="https://biothai.net" target="_blank" rel="noopener noreferrer">biothai.net</a>
+                <a class="src" href="https://ricethailand.go.th" target="_blank"
+                    rel="noopener noreferrer">ricethailand.go.th</a>
+                <a class="src" href="https://lanna-rice.cmu.ac.th" target="_blank"
+                    rel="noopener noreferrer">lanna-rice.cmu.ac.th</a>
+            </div>
+
+            <div class="about-group">
+                <h3>สื่อ</h3>
+                <a class="src" href="https://prachatai.com/journal/2008/09/18027" target="_blank"
+                    rel="noopener noreferrer">prachatai.com/journal/2008/09/18027</a>
+                <a class="src" href="https://theactive.thaipbs.or.th/data/thai-farmers-and-thai-rice-industry"
+                    target="_blank"
+                    rel="noopener noreferrer">theactive.thaipbs.or.th/data/thai-farmers-and-thai-rice-industry</a>
+                <a class="src" href="https://bangkokbiznews.com/lifestyle/judprakai/1057292" target="_blank"
+                    rel="noopener noreferrer">bangkokbiznews.com/lifestyle/judprakai/1057292</a>
+                <a class="src" href="https://mgronline.com/business/detail/9660000092960" target="_blank"
+                    rel="noopener noreferrer">mgronline.com/business/detail/9660000092960</a>
+                <a class="src" href="https://thestandard.co/draft-of-the-rice-act" target="_blank"
+                    rel="noopener noreferrer">thestandard.co/draft-of-the-rice-act</a>
+                <a class="src" href="https://onceinlife.co/lanna-rice-research-center-cmu" target="_blank"
+                    rel="noopener noreferrer">onceinlife.co/lanna-rice-research-center-cmu</a>
+                <a class="src" href="https://technologychaoban.com/news-slide/article_88867" target="_blank"
+                    rel="noopener noreferrer">technologychaoban.com/news-slide/article_88867</a>
+            </div>
+
+            <div class="about-group">
+                <h3>วิชาการ</h3>
+                <a class="src" href="https://so06.tci-thaijo.org" target="_blank"
+                    rel="noopener noreferrer">so06.tci-thaijo.org · งานวิจัยต้นทุนข้าว</a>
+                <a class="src" href="https://kb.psu.ac.th/items/ef30ecba" target="_blank"
+                    rel="noopener noreferrer">kb.psu.ac.th · ข้าวสังข์หยด มอ.</a>
+            </div>
+
+            <p class="disclaimer">เว็บนี้จัดทำเพื่อการศึกษา ข้อมูลทั้งหมดอ้างอิงจากแหล่งที่เปิดเผยต่อสาธารณะ</p>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script>
+        (function () {
+            'use strict';
+
+            /* ═════════ content ═════════ */
+            const DATA = [
+                {
+                    id: 'past', kind: 'past', name: 'อดีต', sub: '110,000 สายพันธุ์',
+                    color: '#1a3a5a', light: '#6f9fd0',
+                    timeline: [
+                        { when: 'ราว 5,000 ปีก่อน', lines: ['คนไทยเริ่มปลูกข้าว', 'พบหลักฐานที่ขอนแก่นและแม่ฮ่องสอน'] },
+                        { when: 'พ.ศ. 2494', lines: ['รวบรวมพันธุ์ข้าวพื้นบ้านได้ 110,000 สายพันธุ์'] },
+                        { when: 'ทศวรรษ 2510', lines: ['การปฏิวัติเขียว เริ่มใช้ข้าวพันธุ์การค้า', 'ต้องซื้อเมล็ดพันธุ์ใหม่ทุกปี', 'พึ่งปุ๋ยเคมีและยาฆ่าแมลง'] },
+                        { when: 'พ.ศ. 2518', lines: ['พ.ร.บ.พันธุ์พืช ควบคุมการขายเมล็ดพันธุ์'] },
+                        { when: 'ปัจจุบัน', lines: ['เหลือข้าวพื้นเมืองไม่ถึง 10,000 สายพันธุ์'] }
+                    ],
+                    sources: ['prachatai.com/journal/2008/09/18027', 'biothai.net']
+                },
+                {
+                    id: 'kam', name: 'ข้าวก่ำล้านนา', sub: 'ภาคเหนือ', seed: 11,
+                    color: '#3a1250', light: '#b27ad6',
+                    region: 'เหนือ', province: 'เชียงใหม่ ลำพูน เชียงราย', tone: 'ม่วงเข้มถึงดำ',
+                    history: [
+                        'ภูมิปัญญาล้านนามากกว่า 700 ปี ใช้ในพิธีกรรม การโภชนาการ การเสริมสวย และยารักษาโรค',
+                        'คณะเกษตร มช. ส่งเสริมพันธุ์ก่ำดอยสะเก็ด ซึ่งได้รับรองจากกรมวิชาการเกษตรแล้ว'
+                    ],
+                    value: ['สารต้านอนุมูลอิสระสูง', 'ยับยั้งมะเร็งบางชนิดได้', 'มีสารแอนโทไซยานิน'],
+                    status: 'ใกล้สูญหาย แต่มีโครงการฟื้นฟูจาก มช.',
+                    sources: ['technologychaoban.com/news-slide/article_88867', 'lanna-rice.cmu.ac.th']
+                },
+                {
+                    id: 'mali-dang', name: 'ข้าวหอมมะลิแดง', sub: 'ภาคอีสาน', seed: 29,
+                    color: '#8b3a1a', light: '#e8895a',
+                    region: 'อีสาน', province: 'สุรินทร์', tone: 'แดงอมน้ำตาล',
+                    history: ['กลายพันธุ์จากข้าวขาวดอกมะลิ 105', 'ปลูกในชุมชนสุรินทร์มาช้านาน'],
+                    value: ['โพลีฟีนอลสูง ต้านอนุมูลอิสระ', 'เหมาะกับสุขภาพมากกว่าข้าวขาว'],
+                    status: 'หายากขึ้นเรื่อยๆ',
+                    sources: ['prachatai.com/journal/2008/09/18027', 'biothai.net']
+                },
+                {
+                    id: 'khao-ta-haeng', name: 'ข้าวขาวตาแห้ง', sub: 'ภาคกลาง', seed: 47,
+                    color: '#8a7a5a', light: '#f0e3c0',
+                    region: 'กลาง', province: 'ฉะเชิงเทรา', tone: 'ขาวครีม',
+                    history: ['พันธุ์พื้นเมืองภาคกลางและภาคเหนือตอนล่าง', 'เมล็ดเรียวยาว ร่วน รสดี', 'เคยเป็นข้าวหลักของภาคกลาง'],
+                    status: 'หายากมาก แทบไม่มีในตลาด',
+                    sources: ['biothai.net']
+                },
+                {
+                    id: 'sangyod', name: 'ข้าวสังข์หยด', sub: 'ภาคใต้', seed: 63,
+                    color: '#6a1a1a', light: '#dd5a50',
+                    region: 'ใต้', province: 'พัทลุง', tone: 'แดงเข้ม',
+                    history: [
+                        'ปลูกมากกว่า 100 ปี ด้วยดินและน้ำจากเทือกเขาบรรทัด',
+                        'GI แห่งแรกของไทย ขึ้นทะเบียน 23 มิ.ย. 2549',
+                        'เคยส่งออกไปมาเลเซียและสิงคโปร์',
+                        'ชาวพัทลุงใช้เป็นของกำนัลในงานบุญประเพณี'
+                    ],
+                    value: ['แอนโทไซยานิน ป้องกันมะเร็ง ชะลอความชรา', 'มีสารกาบา (GABA) บำรุงระบบประสาท', 'ดัชนีน้ำตาลต่ำ เหมาะกับผู้เสี่ยงเบาหวาน'],
+                    price: 'สูงกว่าข้าวทั่วไป 3–5 เท่าในตลาด premium',
+                    status: 'สิ่งบ่งชี้ทางภูมิศาสตร์ (GI) แห่งแรกของไทย',
+                    sources: ['brpd.ricethailand.go.th', 'bangkokbiznews.com/lifestyle/judprakai/1057292', 'kb.psu.ac.th/items/ef30ecba']
+                },
+                {
+                    id: 'present', kind: 'present', name: 'ปัจจุบัน', sub: 'เหลือไม่ถึง 10,000',
+                    color: '#2a2a2a', light: '#b8b8b8',
+                    sources: ['mgronline.com/business/detail/9660000092960', 'thestandard.co/draft-of-the-rice-act', 'biothai.net', 'thaipbs.or.th', 'theactive.thaipbs.or.th/data/thai-farmers-and-thai-rice-industry']
+                }
+            ];
+            const byId = Object.fromEntries(DATA.map(d => [d.id, d]));
+            const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const hasGsap = () => !!window.gsap && !reduce;
+
+            /* ═════════ colour helpers ═════════ */
+            const rgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+            const mix = (a, b, t) => '#' + rgb(a).map((v, i) =>
+                Math.round(v + (rgb(b)[i] - v) * t).toString(16).padStart(2, '0')).join('');
+            const rgba = (h, a) => 'rgba(' + rgb(h).join(',') + ',' + a + ')';
+
+            /* ═════════ rice plant, drawn in code ═════════ */
+            function rng(seed) {
+                let s = (seed * 16807) % 2147483647 || 1;
+                return () => (s = (s * 16807) % 2147483647) / 2147483647;
+            }
+
+            function plantParts(seed, grains = 11) {
+                const r = rng(seed * 7919 + 13);
+                let leaves = '', stems = '';
+
+                for (let i = 0; i < 7; i++) {
+                    const side = i % 2 ? 1 : -1;
+                    const len = 190 + r() * 110;
+                    const spread = (18 + r() * 62) * side;
+                    const w = 5 + r() * 4;
+                    const bx = 100 + side * (2 + r() * 4);
+                    const tx = 100 + spread * 1.5, ty = 420 - len;
+                    const cx = 100 + spread * .25, cy = 420 - len * .62;
+                    leaves += `<path class="leaf" d="M${(bx - w / 2).toFixed(1)} 420Q${(cx - w * .6).toFixed(1)} ${cy.toFixed(1)} ${tx.toFixed(1)} ${ty.toFixed(1)}Q${(cx + w * .6).toFixed(1)} ${(cy + 6).toFixed(1)} ${(bx + w / 2).toFixed(1)} 420Z"/>`;
+                }
+
+                for (let k = 0; k < 3; k++) {
+                    const off = k - 1;
+                    const topY = 70 + r() * 55 + Math.abs(off) * 25;
+                    const tipX = 100 + off * 26 + (r() - .5) * 12;
+                    stems += `<path class="stem" d="M${100 + off * 3} 420Q${100 + off * 6} 260 ${tipX.toFixed(1)} ${topY.toFixed(1)}"/>`;
+
+                    // the heavy grain head droops away from the stem
+                    const dir = off === 0 ? (r() > .5 ? 1 : -1) : off;
+                    const hx = tipX + dir * (38 + r() * 20), hy = topY + 75 + r() * 25;
+                    const qx = tipX + dir * 30, qy = topY - 12;
+                    stems += `<path class="stem thin" d="M${tipX.toFixed(1)} ${topY.toFixed(1)}Q${qx.toFixed(1)} ${qy.toFixed(1)} ${hx.toFixed(1)} ${hy.toFixed(1)}"/>`;
+
+                    for (let j = 1; j <= grains; j++) {
+                        const t = j / (grains + 1), u = 1 - t;
+                        const x = u * u * tipX + 2 * u * t * qx + t * t * hx;
+                        const y = u * u * topY + 2 * u * t * qy + t * t * hy;
+                        const dx = 2 * u * (qx - tipX) + 2 * t * (hx - qx);
+                        const dy = 2 * u * (qy - topY) + 2 * t * (hy - qy);
+                        const len = Math.hypot(dx, dy) || 1;
+                        const sd = j % 2 ? 1 : -1;
+                        const gx = x - dy / len * 4 * sd, gy = y + dx / len * 4 * sd;
+                        const ang = Math.atan2(dy, dx) * 180 / Math.PI + sd * 35;
+                        stems += `<ellipse class="grain" cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" rx="5.2" ry="2.3" transform="rotate(${ang.toFixed(1)} ${gx.toFixed(1)} ${gy.toFixed(1)})"/>`;
+                    }
+                }
+                return { leaves, stems };
+            }
+
+            function plantSVG(seed) {
+                const p = plantParts(seed);
+                return `<svg viewBox="0 0 200 420" aria-hidden="true" focusable="false"><g class="p-leaves">${p.leaves}</g><g class="p-stems">${p.stems}</g></svg>`;
+            }
+
+            function fieldSVG(alive, ghosts, seed) {
+                const r = rng(seed);
+                const items = Array.from({ length: alive + ghosts }, (_, i) => i >= alive);
+                // even slots with jitter, shuffled, so a sparse field still reads as deliberate
+                const slots = items.map((_, i) => (i + r()) / items.length * 1260 - 30);
+                for (let i = slots.length - 1; i > 0; i--) {
+                    const j = Math.floor(r() * (i + 1));
+                    [slots[i], slots[j]] = [slots[j], slots[i]];
+                }
+                const rows = items.map((ghost, i) => ({ ghost, x: slots[i], s: .34 + r() * .22, d: -r() * 5, seed: Math.floor(r() * 99999) + 1 }))
+                    .sort((a, b) => a.s - b.s);
+                const g = rows.map(o => {
+                    const p = plantParts(o.seed, 7);
+                    const y = 420 - 420 * o.s;
+                    return `<g transform="translate(${(o.x - 100 * o.s).toFixed(1)} ${y.toFixed(1)}) scale(${o.s.toFixed(3)})"><g class="fp${o.ghost ? ' ghost' : ''}" style="animation-delay:${o.d.toFixed(2)}s"><g>${p.leaves}</g><g>${p.stems}</g></g></g>`;
+                }).join('');
+                return `<svg viewBox="0 0 1200 420" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">${g}</svg>`;
+            }
+
+            /* ═════════ main scene ═════════ */
+            const scene = document.getElementById('scene');
+            const field = document.getElementById('field');
+            const detail = document.getElementById('detail');
+            const veil = document.getElementById('veil');
+            const about = document.getElementById('about');
+
+            const ORDER = ['past', 'kam', 'mali-dang', 'khao-ta-haeng', 'sangyod', 'present'];
+            field.innerHTML = ORDER.map((id, i) => {
+                const d = byId[id];
+                return `<button class="plant" type="button" data-id="${id}" style="--c:${d.color};--l:${d.light};--glow:${rgba(d.light, .5)}" aria-label="${d.name} — ${d.sub}">` +
+                    `<span class="plant-name"><b>${d.name}</b><span>${d.sub}</span></span>${plantSVG(d.seed || i * 17 + 5)}</button>`;
+            }).join('');
+
+            const plants = [...field.querySelectorAll('.plant')].map((el, i) => ({
+                el,
+                stems: el.querySelector('.p-stems'),
+                leaves: el.querySelector('.p-leaves'),
+                phase: i * 1.37,
+                weight: .75 + (i * 37 % 10) / 25
+            }));
+
+            // ambient sway + a slow lean toward the cursor
+            let targetX = 0, leanX = 0, sceneLive = true;
+            window.addEventListener('pointermove', e => {
+                if (e.pointerType === 'mouse') targetX = (e.clientX / window.innerWidth - .5) * 2;
+            });
+
+            function sway() {
+                if (!sceneLive || reduce) return;
+                leanX += (targetX - leanX) * .035;
+                const t = performance.now() / 1000;
+                for (const p of plants) {
+                    const a = Math.sin(t * .85 + p.phase) * 1.6 + Math.sin(t * .37 + p.phase * 2) * .8 + leanX * 6.5 * p.weight;
+                    p.stems.style.transform = `rotate(${a.toFixed(2)}deg)`;
+                    p.leaves.style.transform = `rotate(${(a * .42).toFixed(2)}deg)`;
+                }
+            }
+            if (window.gsap) gsap.ticker.add(sway);
+            else (function loop() { sway(); requestAnimationFrame(loop); })();
+
+            field.addEventListener('click', e => {
+                const b = e.target.closest('.plant');
+                if (b) openDetail(b.dataset.id, b);
+            });
+
+            /* ═════════ detail templates ═════════ */
+            const ICON_BACK = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>';
+            const ICON_INFO = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="7.6" r=".7" fill="currentColor"/></svg>';
+            const li = arr => arr.map(x => `<li>${x}</li>`).join('');
+            const chips = arr => `<div class="chips">${arr.map(x => `<span class="chip">${x}</span>`).join('')}</div>`;
+
+            const top = () => `<div class="d-top"><button class="d-back" type="button">${ICON_BACK}<span>กลับ</span></button>` +
+                `<button class="icon-btn js-about" type="button" aria-label="เกี่ยวกับและแหล่งอ้างอิง">${ICON_INFO}</button></div>`;
+
+            const sources = list => `<div class="sources rv"><h3>แหล่งอ้างอิง</h3>${list.map(s =>
+                `<a class="src" href="https://${s}" target="_blank" rel="noopener noreferrer">${s.split('/')[0]}</a>`).join('')}</div>`;
+
+            function varietyHTML(d) {
+                return top() + `
+                <section class="d-hero">
+                    <div class="d-title">
+                        <p class="d-kicker rv">ภาค${d.region}</p>
+                        <h1 class="rv">${d.name}</h1>
+                        <div class="d-meta rv"><span class="chip">จังหวัด ${d.province}</span><span class="chip">สีเมล็ด ${d.tone}</span></div>
+                        <p class="d-status rv">${d.status}</p>
+                    </div>
+                    <div class="d-plant rv">${plantSVG(d.seed)}</div>
+                </section>
+                <div class="d-body">
+                    <div class="cards">
+                        <article class="card rv"><span class="card-label">ประวัติ</span><h2>ความเป็นมา</h2><ul class="list">${li(d.history)}</ul></article>
+                        ${d.value ? `<article class="card rv"><span class="card-label">คุณค่า</span><h2>ประโยชน์ต่อสุขภาพ</h2><ul class="list">${li(d.value)}</ul></article>` : ''}
+                        ${d.price ? `<article class="card rv"><span class="card-label">ราคา</span><h2>มูลค่าในตลาด</h2><p class="lead">${d.price}</p></article>` : ''}
+                    </div>
+                    ${sources(d.sources)}
+                </div>`;
+            }
+
+            function fieldHero(d, svg, kicker, big, count, sub) {
+                return top() + `
+                <section class="f-hero">
+                    <div class="f-field">${svg}</div>
+                    <div class="d-title">
+                        <p class="d-kicker rv">${kicker}</p>
+                        <div class="f-big rv" data-count="${count}">${big}</div>
+                        <p class="f-sub rv">${sub}</p>
+                    </div>
+                </section>`;
+            }
+
+            function pastHTML(d) {
+                return fieldHero(d, fieldSVG(55, 0, 11), 'อดีต', '110,000', 110000, 'สายพันธุ์ข้าวพื้นบ้านที่รวบรวมได้ พ.ศ. 2494') + `
+                <div class="d-body">
+                    <div class="block-head rv"><span class="block-num">เส้นเวลา</span><h2>จากทุ่งที่หลากหลาย สู่ทุ่งที่เหมือนกัน</h2></div>
+                    <ol class="timeline">${d.timeline.map(t =>
+                    `<li class="t-item rv"><div class="t-when">${t.when}</div><div class="t-what">${t.lines.map(l => `<p>${l}</p>`).join('')}</div></li>`).join('')}</ol>
+                    ${sources(d.sources)}
+                </div>`;
+            }
+
+            function presentHTML(d) {
+                // five living plants among the faint outlines of what was lost
+                return fieldHero(d, fieldSVG(5, 45, 23), 'เหลือไม่ถึง', '10,000', 10000, 'สายพันธุ์ข้าวพื้นเมืองที่ยังเหลืออยู่ในปัจจุบัน') + `
+                <div class="d-body">
+                    <section class="block">
+                        <div class="block-head rv"><span class="block-num">01</span><h2>สาเหตุที่หายไป</h2></div>
+                        <div class="card rv"><ul class="list">${li([
+                    'ข้าวพันธุ์การค้าให้ผลผลิตสูงกว่า 2–3 เท่า',
+                    'ราคารับซื้อเท่ากัน เกษตรกรจึงไม่มีแรงจูงใจปลูกข้าวพื้นเมือง',
+                    'บริษัทข้ามชาติ (Monsanto, Syngenta, Pioneer) ผูกขาดเมล็ดพันธุ์ข้าวโพดและพืชไร่'
+                ])}</ul></div>
+                    </section>
+
+                    <section class="block">
+                        <div class="block-head rv"><span class="block-num">02</span><h2>ผลกระทบ 3 มิติ</h2></div>
+                        <div class="cards">
+                            <article class="card rv"><span class="card-label">สุขภาพ</span><h3>สารอาหารที่หาไม่ได้ที่อื่น</h3><p class="body-text">สูญเสียสารต้านอนุมูลอิสระ สารกาบา และแอนโทไซยานิน ที่มีเฉพาะในข้าวพื้นเมือง</p></article>
+                            <article class="card rv"><span class="card-label">วัฒนธรรม</span><h3>ภูมิปัญญาหายตามไป</h3><p class="body-text">พิธีกรรม ภูมิปัญญา และอัตลักษณ์ของชุมชนหายไปพร้อมกับข้าว</p></article>
+                            <article class="card rv"><span class="card-label">ความมั่นคงอาหาร</span><h3>ประกันยามวิกฤต</h3><p class="body-text">ข้าวพื้นเมืองทนแล้ง ทนน้ำท่วม ทนโรค ความหลากหลายทางพันธุกรรมคือประกันเมื่อเกิดวิกฤต</p></article>
+                        </div>
+                    </section>
+
+                    <section class="block">
+                        <div class="block-head rv"><span class="block-num">03</span><h2>กฎหมาย</h2></div>
+                        <div class="cards">
+                            <article class="card rv">
+                                <span class="card-label">ร่างกฎหมาย</span><h3>ร่าง พ.ร.บ.ข้าว มาตรา 27</h3>
+                                <ul class="list">${li(['ขายได้เฉพาะเมล็ดพันธุ์ที่กรมการข้าวรับรอง', 'โทษจำคุก 1 ปี หรือปรับ 100,000 บาท'])}</ul>
+                                <div class="stance"><b>ชาวนาค้าน</b><span>ปิดกั้นการพัฒนาพันธุ์โดยชุมชน</span></div>
+                                <div class="stance"><b>รัฐชี้แจง</b><span>ห้ามเฉพาะนายทุน ชาวนาใช้เองได้</span></div>
+                            </article>
+                            <article class="card rv">
+                                <span class="card-label">มีผลบังคับใช้</span><h3>พ.ร.บ.พันธุ์พืช 2518</h3>
+                                <p class="body-text">ขายเมล็ดพันธุ์ได้เฉพาะพันธุ์ที่ได้รับการรับรองแล้ว</p>
+                            </article>
+                        </div>
+                    </section>
+
+                    <section class="block">
+                        <div class="block-head rv"><span class="block-num">04</span><h2>ทางออกและองค์กรที่ทำงาน</h2></div>
+                        <div class="cards">
+                            <article class="card rv"><span class="card-label">ก่อตั้ง 2538</span><h3>BioThai</h3><p class="body-text">อนุรักษ์พันธุ์ข้าวพื้นเมือง</p><p class="org-stat">200+ สายพันธุ์ ใน 8 จังหวัด</p><a class="org-link" href="https://biothai.net" target="_blank" rel="noopener noreferrer">biothai.net</a></article>
+                            <article class="card rv"><span class="card-label">หน่วยงานรัฐ</span><h3>กรมการข้าว</h3><p class="body-text">ธนาคารเมล็ดพันธุ์แห่งชาติ</p><a class="org-link" href="https://ricethailand.go.th" target="_blank" rel="noopener noreferrer">ricethailand.go.th</a></article>
+                            <article class="card rv"><span class="card-label">มูลนิธิ</span><h3>มูลนิธิชัยพัฒนา</h3><p class="org-stat">10 สายพันธุ์ จาก 7 จังหวัด</p></article>
+                            <article class="card cta rv">
+                                <span class="card-label">คุณช่วยได้</span><h3>เลือกข้าวพื้นเมืองในครั้งหน้าที่ซื้อข้าว</h3>
+                                <div class="cta-row">
+                                    <div><h4>ซื้อได้ที่ไหน</h4>${chips(['ตลาดอินทรีย์', 'Shopee', 'Lazada'])}</div>
+                                    <div><h4>ชื่อที่ใช้ค้นหา</h4>${chips(['ข้าวสังข์หยด', 'ข้าวก่ำ', 'ข้าวไรซ์เบอร์รี'])}</div>
+                                </div>
+                            </article>
+                        </div>
+                    </section>
+                    ${sources(d.sources)}
+                </div>`;
+            }
+
+            /* ═════════ detail open / close ═════════ */
+            let current = null, busy = false, observer = null, opener = null;
+
+            function paint(d) {
+                const isField = d.kind === 'past' || d.kind === 'present';
+                detail.innerHTML = d.kind === 'past' ? pastHTML(d) : d.kind === 'present' ? presentHTML(d) : varietyHTML(d);
+                detail.style.setProperty('--glow', rgba(d.light, .35));
+                detail.style.setProperty('--dbg', isField
+                    ? `radial-gradient(ellipse 90% 70% at 50% 18%, ${mix(d.color, '#ffffff', .05)} 0%, ${mix(d.color, '#0b150b', .5)} 48%, #0a130a 100%)`
+                    : `radial-gradient(ellipse 80% 78% at 74% 40%, ${mix(d.color, '#ffffff', .06)} 0%, ${mix(d.color, '#0b150b', .55)} 46%, #0a130a 100%)`);
+                if (d.kind === 'present') {
+                    detail.style.setProperty('--leafc', '#6d7a66');
+                    detail.style.setProperty('--stemc', '#8a9483');
+                    detail.style.setProperty('--grainc', '#a9a48f');
+                } else if (d.kind === 'past') {
+                    detail.style.setProperty('--leafc', '#6f9a52');
+                    detail.style.setProperty('--stemc', '#93b56b');
+                    detail.style.setProperty('--grainc', '#d6bf82');
+                } else {
+                    detail.style.setProperty('--leafc', mix(d.color, '#7da35a', .45));
+                    detail.style.setProperty('--stemc', d.light);
+                    detail.style.setProperty('--grainc', d.light);
+                }
+                detail.scrollTop = 0;
+            }
+
+            function countUp() {
+                const el = detail.querySelector('[data-count]');
+                if (!el) return;
+                const target = +el.dataset.count;
+                if (reduce) { el.textContent = target.toLocaleString('en-US'); return; }
+                const start = performance.now(), dur = 1700;
+                (function frame(now) {
+                    const t = Math.min((now - start) / dur, 1);
+                    el.textContent = Math.round((1 - Math.pow(1 - t, 4)) * target).toLocaleString('en-US');
+                    if (t < 1 && el.isConnected) requestAnimationFrame(frame);
+                })(start);
+            }
+
+            function reveal() {
+                countUp();
+                if (!hasGsap()) return;
+                const all = [...detail.querySelectorAll('.rv')];
+                const hero = all.filter(el => el.closest('.d-hero, .f-hero'));
+                const rest = all.filter(el => !el.closest('.d-hero, .f-hero'));
+                gsap.fromTo(hero, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: .8, stagger: .08, ease: 'power3.out' });
+
+                // content below the fold rises as it scrolls into view
+                gsap.set(rest, { y: 34, opacity: 0 });
+                if (observer) observer.disconnect();
+                observer = new IntersectionObserver(entries => {
+                    const seen = entries.filter(e => e.isIntersecting).map(e => e.target);
+                    if (!seen.length) return;
+                    seen.forEach(el => observer.unobserve(el));
+                    gsap.to(seen, { y: 0, opacity: 1, duration: .7, stagger: .07, ease: 'power3.out' });
+                }, { root: detail, threshold: .1 });
+                rest.forEach(el => observer.observe(el));
+            }
+
+            function show() {
+                detail.hidden = false;
+                scene.setAttribute('aria-hidden', 'true');
+                document.body.classList.add('in-detail');
+                sceneLive = false;
+                const back = detail.querySelector('.d-back');
+                if (back) back.focus({ preventScroll: true });
+            }
+
+            function openDetail(id, fromEl) {
+                const d = byId[id];
+                if (!d || busy) return;
+                if (location.hash !== '#' + id) history.pushState({ fromScene: true }, '', '#' + id);
+                current = id;
+                opener = fromEl || field.querySelector(`[data-id="${id}"]`);
+
+                if (!fromEl || !hasGsap()) {
+                    paint(d); show(); reveal();
+                    return;
+                }
+
+                // zoom the tapped plant until it fills the screen, then cross into its page
+                busy = true;
+                const r = fromEl.getBoundingClientRect();
+                const dx = window.innerWidth / 2 - (r.left + r.width / 2);
+                const dy = window.innerHeight / 2 - (r.top + r.height / 2);
+                const scale = Math.max(window.innerWidth / r.width, window.innerHeight / r.height) * 1.15;
+                const others = plants.map(p => p.el).filter(el => el !== fromEl);
+                const chrome = document.querySelectorAll('.scene-hint, .topbar');
+                veil.style.background = mix(d.color, '#0b150b', .35);
+                fromEl.classList.add('hot');
+
+                gsap.timeline({ defaults: { ease: 'power2.inOut' } })
+                    .to(others, { opacity: 0, y: 40, duration: .35, stagger: .025 }, 0)
+                    .to(chrome, { opacity: 0, duration: .3 }, 0)
+                    .to(fromEl, { x: dx, y: dy, scale, duration: .6 }, 0)
+                    .to(veil, { opacity: 1, duration: .3 }, .35)
+                    .add(() => {
+                        paint(d); show();
+                        fromEl.classList.remove('hot');
+                        gsap.set(plants.map(p => p.el), { clearProps: 'transform,opacity' });
+                        gsap.set(chrome, { clearProps: 'opacity' });
+                    })
+                    .add(reveal)
+                    .to(veil, { opacity: 0, duration: .45, ease: 'power2.out', onComplete: () => { busy = false; } });
+            }
+
+            function closeDetail() {
+                if (detail.hidden) return;
+                current = null;
+                const finish = () => {
+                    detail.hidden = true;
+                    detail.innerHTML = '';
+                    if (observer) observer.disconnect();
+                    document.body.classList.remove('in-detail');
+                    scene.removeAttribute('aria-hidden');
+                    sceneLive = true;
+                    if (opener) opener.focus({ preventScroll: true });
+                };
+                if (!hasGsap()) { finish(); return; }
+
+                busy = true;
+                gsap.to(detail, {
+                    opacity: 0, duration: .35, ease: 'power2.in',
+                    onComplete() {
+                        finish();
+                        gsap.set(detail, { clearProps: 'opacity' });
+                        gsap.fromTo(plants.map(p => p.el), { opacity: 0, y: 50 },
+                            { opacity: 1, y: 0, duration: .7, stagger: .06, ease: 'power3.out', clearProps: 'transform,opacity' });
+                        gsap.fromTo('.scene-hint, .topbar', { opacity: 0 }, { opacity: 1, duration: .6, clearProps: 'opacity' });
+                        busy = false;
+                    }
+                });
+            }
+
+            function goHome() {
+                // step back through history when we pushed the entry, so the browser Back button stays honest
+                if (history.state && history.state.fromScene) history.back();
+                else { history.replaceState(null, '', location.pathname + location.search); closeDetail(); }
+            }
+
+            function route() {
+                const id = decodeURIComponent(location.hash.slice(1));
+                if (byId[id]) { if (current !== id) openDetail(id, null); }
+                else closeDetail();
+            }
+
+            window.addEventListener('popstate', route);
+            detail.addEventListener('click', e => { if (e.target.closest('.d-back')) goHome(); });
+
+            /* ═════════ about ═════════ */
+            let lastFocus = null;
+            function openAbout() {
+                lastFocus = document.activeElement;
+                about.hidden = false;
+                about.querySelector('.about-close').focus();
+                if (hasGsap()) gsap.fromTo(about.querySelector('.about-card'), { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: .45, ease: 'power3.out' });
+            }
+            function closeAbout() {
+                about.hidden = true;
+                if (lastFocus) lastFocus.focus({ preventScroll: true });
+            }
+            document.addEventListener('click', e => { if (e.target.closest('.js-about')) openAbout(); });
+            about.addEventListener('click', e => {
+                if (e.target === about || e.target.closest('.about-close')) closeAbout();
+            });
+            document.addEventListener('keydown', e => {
+                if (e.key !== 'Escape') return;
+                if (!about.hidden) closeAbout();
+                else if (current) goHome();
+            });
+
+            /* ═════════ boot ═════════ */
+            route();
+            if (hasGsap() && !current) {
+                gsap.from(plants.map(p => p.el), { opacity: 0, y: 60, duration: .9, stagger: .08, ease: 'power3.out', clearProps: 'transform,opacity' });
+                gsap.from('.scene-hint', { opacity: 0, y: 16, duration: .8, delay: .3, ease: 'power3.out', clearProps: 'transform,opacity' });
+            }
+        })();
+    </script>
+</body>
+
+</html>

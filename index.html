@@ -1547,13 +1547,13 @@
         }
 
         // ── closing slide QR ──
-        // Point this wherever the audience should land. Left empty it uses the deck's
-        // own address, so scanning reopens these slides on their phone.
+        // Point this wherever the audience should land. Left empty it opens the companion
+        // site in web/, which lives next to the deck.
         const SHARE_URL = '';
 
         function drawEndQr() {
             const box = document.getElementById('endQr');
-            const target = SHARE_URL || (onWeb ? baseDir : 'https://kiraportfolio.github.io/rice-deck/');
+            const target = SHARE_URL || ((onWeb ? baseDir : 'https://kiraportfolio.github.io/rice-deck/') + 'web/');
             document.getElementById('endUrl').textContent = target.replace(/^https?:\/\//, '');
 
             const fail = () => {
