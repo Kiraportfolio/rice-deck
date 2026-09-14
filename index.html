@@ -67,33 +67,43 @@
         }
 
         /* ───────────── TYPE SCALE (Apple keynote proportions) ───────────── */
+        /* Thai needs room that Latin does not: combining vowels sit above and below the
+           baseline, so negative tracking collapses them into each other and a sub-1.2
+           line-height clips the tone marks. Tight tracking is kept for .num/.latin only. */
         .kicker {
             font-size: clamp(15px, 1.5vw, 21px);
             font-weight: 600;
-            letter-spacing: .01em;
-            line-height: 1.2;
+            letter-spacing: 0;
+            line-height: 1.45;
             margin-bottom: clamp(12px, 1.6vw, 20px);
         }
 
         .display {
-            font-size: clamp(46px, 7.6vw, 108px);
+            font-size: clamp(44px, 7.2vw, 102px);
             font-weight: 700;
-            letter-spacing: -.022em;
-            line-height: 1.06;
+            letter-spacing: 0;
+            line-height: 1.28;
         }
 
         .headline {
-            font-size: clamp(38px, 5.6vw, 76px);
+            font-size: clamp(36px, 5.2vw, 70px);
             font-weight: 700;
-            letter-spacing: -.02em;
-            line-height: 1.1;
+            letter-spacing: 0;
+            line-height: 1.32;
         }
 
         .stat {
             font-size: clamp(84px, 16.5vw, 240px);
             font-weight: 800;
-            letter-spacing: -.045em;
-            line-height: .92;
+            letter-spacing: -.04em;
+            line-height: 1.04;
+        }
+
+        /* gradient text is painted on the glyph box, so it needs the descender room too */
+        .display,
+        .headline,
+        .stat {
+            padding-bottom: .08em;
         }
 
         .body-lg {
@@ -365,17 +375,129 @@
             transition-delay: .94s;
         }
 
-        /* ambient stage light behind hero content */
+        /* ── big numbers swell as they count, so the reveal lands ── */
+        .stat {
+            transform: scale(.94);
+            transition: transform 1.4s var(--ease) .1s;
+        }
+
+        .slide.active .stat {
+            transform: scale(1);
+        }
+
+        /* ── progress bar catches a slow highlight ── */
+        @keyframes sheen {
+            from {
+                background-position: -140% 0;
+            }
+
+            to {
+                background-position: 240% 0;
+            }
+        }
+
+        .progress-fill::after {
+            content: '';
+            display: block;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .55), transparent);
+            background-size: 40% 100%;
+            background-repeat: no-repeat;
+            animation: sheen 4.5s linear infinite;
+        }
+
+        /* ── the glow breathes, so a held slide never looks frozen ── */
+        /* scale only — opacity stays with the entrance transition, and there is no
+           translate to undo now that .glow is a full-bleed background */
+        @keyframes breathe {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.06);
+            }
+        }
+
+        .slide.active .glow {
+            animation: breathe 9s ease-in-out infinite;
+        }
+
+        /* ── the ghost year drifts, giving S5 depth ── */
+        @keyframes drift {
+
+            0%,
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+
+            50% {
+                transform: translate(-50%, -52%) scale(1.04);
+            }
+        }
+
+        .slide.active .ghost-year {
+            animation: drift 16s ease-in-out infinite;
+        }
+
+        /* ── the drop line draws itself downward on S3 ── */
+        #s3 .drop-line {
+            transform-origin: top center;
+            transform: scaleY(0);
+            transition: transform 1s var(--ease) .35s;
+        }
+
+        #s3.active .drop-line {
+            transform: scaleY(1);
+        }
+
+        /* ── cards lift and catch light on hover ── */
+        .card,
+        .pillar {
+            will-change: transform;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, .16), transparent 60%);
+            opacity: 0;
+            transition: opacity .5s var(--ease);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        /* ── the closing QR settles in with a gentle pop ── */
+        @keyframes qrIn {
+            from {
+                transform: scale(.88) rotate(-2deg);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1) rotate(0);
+                opacity: 1;
+            }
+        }
+
+        #s10.active .qr-wrap {
+            animation: qrIn 1s var(--ease) .25s both;
+        }
+
+        /* Ambient stage light. Painted as the slide's own background so it is locked to
+           the centre of the slide — it cannot drift with the cursor or the layout. */
         .glow {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: min(1100px, 95vw);
-            height: min(1100px, 95vw);
-            border-radius: 50%;
-            pointer-events: none;
+            inset: 0;
             z-index: 0;
+            pointer-events: none;
             opacity: 0;
             transition: opacity 1.6s var(--ease) .1s;
         }
@@ -385,19 +507,23 @@
         }
 
         .glow-green {
-            background: radial-gradient(circle, rgba(47, 156, 82, .22) 0%, rgba(20, 60, 30, .10) 38%, transparent 68%);
+            background: radial-gradient(ellipse 85% 95% at 50% 50%,
+                    #1d5130 0%, #16351f 32%, #0a1a0f 58%, #000 80%);
         }
 
         .glow-gold {
-            background: radial-gradient(circle, rgba(232, 180, 76, .20) 0%, rgba(120, 85, 20, .08) 40%, transparent 68%);
+            background: radial-gradient(ellipse 85% 95% at 50% 50%,
+                    #55401a 0%, #372a12 32%, #17110a 58%, #000 80%);
         }
 
         .glow-coral {
-            background: radial-gradient(circle, rgba(255, 107, 94, .18) 0%, rgba(120, 30, 25, .07) 40%, transparent 68%);
+            background: radial-gradient(ellipse 85% 95% at 50% 50%,
+                    #5a2420 0%, #3a1815 32%, #180a09 58%, #000 80%);
         }
 
         .glow-silver {
-            background: radial-gradient(circle, rgba(255, 255, 255, .10) 0%, rgba(255, 255, 255, .03) 40%, transparent 68%);
+            background: radial-gradient(ellipse 85% 95% at 50% 50%,
+                    #2e2e33 0%, #1f1f23 32%, #101012 58%, #000 80%);
         }
 
         .stage {
@@ -532,8 +658,8 @@
             z-index: 1;
             font-size: clamp(19px, 1.9vw, 28px);
             font-weight: 700;
-            letter-spacing: -.015em;
-            line-height: 1.25;
+            letter-spacing: 0;
+            line-height: 1.45;
             color: var(--text);
             margin-top: clamp(20px, 3vw, 40px);
         }
@@ -637,7 +763,8 @@
         .pillar .pt {
             font-size: clamp(20px, 2vw, 30px);
             font-weight: 700;
-            letter-spacing: -.015em;
+            letter-spacing: 0;
+            line-height: 1.4;
             color: var(--text);
             margin-bottom: 14px;
         }
@@ -705,9 +832,16 @@
             font-size: 12px;
             font-weight: 500;
             color: rgba(0, 0, 0, .35);
-            padding: 20px;
+            padding: 14px;
             line-height: 1.65;
             box-shadow: 0 24px 70px rgba(0, 0, 0, .6), 0 0 0 1px rgba(255, 255, 255, .08);
+        }
+
+        .qr-wrap canvas,
+        .qr-wrap img {
+            width: 100% !important;
+            height: 100% !important;
+            display: block;
         }
 
         .url {
@@ -811,7 +945,8 @@
         .pair-card h3 {
             font-size: clamp(22px, 2.4vw, 30px);
             font-weight: 700;
-            letter-spacing: -.02em;
+            letter-spacing: 0;
+            line-height: 1.4;
         }
 
         .pair-card .hint {
@@ -919,9 +1054,18 @@
             .slide,
             .slide.exit-back,
             .rise,
-            .glow {
+            .glow,
+            .stat {
                 transition-duration: .2s !important;
                 filter: none !important;
+                transform: none !important;
+            }
+
+            .slide.active .glow,
+            .slide.active .ghost-year,
+            .progress-fill::after,
+            #s10.active .qr-wrap {
+                animation: none !important;
             }
         }
     </style>
@@ -1003,6 +1147,7 @@
 
         <!-- S5 · TURNING POINT -->
         <div class="slide" id="s5" data-stage="dark">
+            <div class="glow glow-gold"></div>
             <div class="ghost-year num">2510</div>
             <div class="stage">
                 <div class="kicker grad-gold rise d1">จุดเปลี่ยน</div>
@@ -1014,6 +1159,7 @@
 
         <!-- S6 · WHAT WE LOSE -->
         <div class="slide" id="s6" data-stage="dark">
+            <div class="glow glow-green"></div>
             <div class="stage">
                 <div class="kicker grad-gold rise d1">สิ่งที่เรากำลังเสียไป</div>
                 <h2 class="headline grad-silver rise d1" style="margin-bottom:clamp(28px,3.6vw,52px)">ไม่ใช่แค่เมล็ดข้าว
@@ -1085,9 +1231,9 @@
         <div class="slide" id="s10" data-stage="dark">
             <div class="glow glow-silver"></div>
             <div class="stage">
-                <div class="qr-wrap rise d1">ใส่ QR code<br>เว็บของคุณที่นี่</div>
+                <div class="qr-wrap rise d1" id="endQr"></div>
                 <h3 class="headline grad-silver rise d2">อยากรู้เพิ่ม?</h3>
-                <div class="url rise d3">วางลิงก์เว็บที่นี่</div>
+                <div class="url rise d3" id="endUrl">สแกนเพื่อเปิดสไลด์นี้</div>
             </div>
         </div>
 
@@ -1321,6 +1467,41 @@
             s.onerror = fail;
             document.head.appendChild(s);
         }
+
+        // ── closing slide QR ──
+        // Point this wherever the audience should land. Left empty it uses the deck's
+        // own address, so scanning reopens these slides on their phone.
+        const SHARE_URL = '';
+
+        function drawEndQr() {
+            const box = document.getElementById('endQr');
+            const target = SHARE_URL || (onWeb ? baseDir : 'https://kiraportfolio.github.io/rice-deck/');
+            document.getElementById('endUrl').textContent = target.replace(/^https?:\/\//, '');
+
+            const fail = () => {
+                box.innerHTML = '<span style="font-size:11px;color:#8a8a8e;line-height:1.6">' +
+                    'สแกนไม่ได้<br>อ่านลิงก์ด้านล่าง</span>';
+            };
+            const render = () => {
+                try {
+                    box.innerHTML = '';
+                    new window.QRCode(box, {
+                        text: target,
+                        width: 420,
+                        height: 420,
+                        correctLevel: window.QRCode.CorrectLevel.M
+                    });
+                } catch (_) { fail(); }
+            };
+
+            if (window.QRCode) return render();
+            const s = document.createElement('script');
+            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+            s.onload = render;
+            s.onerror = fail;
+            document.head.appendChild(s);
+        }
+        drawEndQr();
 
         connectBtn.addEventListener('click', () => { pair.classList.add('open'); drawQr(); });
         document.getElementById('pairClose').addEventListener('click', () => pair.classList.remove('open'));
