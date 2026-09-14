@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ข้าวพันธุ์พื้นเมืองไทย</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@200;300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Apple stage palette */
+            --bg: #000000;
+            --text: #f5f5f7;
+            --muted: #86868b;
+            --dim: #6e6e73;
+            --hairline: rgba(255, 255, 255, .10);
+
+            /* light stage (S9) */
+            --light-bg: #f5f5f7;
+            --light-text: #1d1d1f;
+            --light-muted: #6e6e73;
+
+            /* accents */
+            --gold: #e8b44c;
+            --gold-deep: #b8811f;
+            --coral: #ff6b5e;
+            --coral-deep: #d63a2c;
+            --leaf: #74d68a;
+            --leaf-deep: #2f9c52;
+
+            --ease: cubic-bezier(.22, .61, .36, 1);
+            --ease-soft: cubic-bezier(.4, 0, .2, 1);
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+            color: var(--text);
+            /* Windows/mac fallbacks matter: on an offline PC the web fonts never load */
+            font-family: 'Noto Sans Thai', 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display',
+                'Segoe UI', 'Leelawadee UI', 'Sarabun', Tahoma, sans-serif;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* latin + numerals ride on Inter, exactly like SF Pro pairing */
+        .num,
+        .latin {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: 'ss01';
+        }
+
+        /* ───────────── TYPE SCALE (Apple keynote proportions) ───────────── */
+        .kicker {
+            font-size: clamp(15px, 1.5vw, 21px);
+            font-weight: 600;
+            letter-spacing: .01em;
+            line-height: 1.2;
+            margin-bottom: clamp(12px, 1.6vw, 20px);
+        }
+
+        .display {
+            font-size: clamp(46px, 7.6vw, 108px);
+            font-weight: 700;
+            letter-spacing: -.022em;
+            line-height: 1.06;
+        }
+
+        .headline {
+            font-size: clamp(38px, 5.6vw, 76px);
+            font-weight: 700;
+            letter-spacing: -.02em;
+            line-height: 1.1;
+        }
+
+        .stat {
+            font-size: clamp(84px, 16.5vw, 240px);
+            font-weight: 800;
+            letter-spacing: -.045em;
+            line-height: .92;
+        }
+
+        .body-lg {
+            font-size: clamp(17px, 1.6vw, 24px);
+            font-weight: 400;
+            line-height: 1.55;
+            color: var(--muted);
+        }
+
+        .body-sm {
+            font-size: clamp(14px, 1.15vw, 17px);
+            font-weight: 400;
+            line-height: 1.6;
+            color: var(--muted);
+        }
+
+        /* gradient-filled text — the Apple reveal signature */
+        .grad-gold {
+            background: linear-gradient(140deg, #ffd978 0%, var(--gold) 42%, var(--gold-deep) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .grad-coral {
+            background: linear-gradient(140deg, #ff9d88 0%, var(--coral) 45%, var(--coral-deep) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .grad-leaf {
+            background: linear-gradient(140deg, #b5f5c1 0%, var(--leaf) 45%, var(--leaf-deep) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .grad-silver {
+            background: linear-gradient(160deg, #ffffff 0%, #f5f5f7 38%, #a8a8ad 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* ───────────── CHROME ───────────── */
+        .progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: rgba(255, 255, 255, .07);
+            z-index: 600;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 10%;
+            background: linear-gradient(90deg, var(--gold-deep), var(--gold));
+            transition: width 1s var(--ease);
+        }
+
+        /* floating glass control bar, bottom center */
+        .dock {
+            position: fixed;
+            bottom: clamp(20px, 3vh, 34px);
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 9px;
+            border-radius: 999px;
+            background: rgba(40, 40, 42, .55);
+            border: 1px solid rgba(255, 255, 255, .10);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, .55);
+        }
+
+        .dock button.arrow {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, .55);
+            font-size: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background .25s var(--ease-soft), color .25s var(--ease-soft);
+        }
+
+        .dock button.arrow:hover {
+            background: rgba(255, 255, 255, .12);
+            color: #fff;
+        }
+
+        .dots {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 0 6px;
+        }
+
+        .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            border: none;
+            padding: 0;
+            background: rgba(255, 255, 255, .25);
+            cursor: pointer;
+            transition: background .35s var(--ease), transform .35s var(--ease), width .35s var(--ease);
+        }
+
+        .dot:hover {
+            background: rgba(255, 255, 255, .5);
+        }
+
+        .dot.on {
+            width: 22px;
+            border-radius: 999px;
+            background: var(--gold);
+        }
+
+        .counter {
+            position: fixed;
+            bottom: clamp(24px, 3.4vh, 38px);
+            right: clamp(22px, 3vw, 44px);
+            z-index: 600;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: .04em;
+            color: rgba(255, 255, 255, .28);
+        }
+
+        .connect-btn {
+            position: fixed;
+            bottom: clamp(22px, 3.2vh, 36px);
+            left: clamp(22px, 3vw, 40px);
+            z-index: 600;
+            background: rgba(40, 40, 42, .55);
+            border: 1px solid rgba(255, 255, 255, .10);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            color: rgba(255, 255, 255, .55);
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 9px 18px;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: all .25s var(--ease-soft);
+        }
+
+        .connect-btn:hover {
+            background: rgba(255, 255, 255, .14);
+            color: #fff;
+        }
+
+        .connect-btn.connected {
+            border-color: rgba(116, 214, 138, .45);
+            color: var(--leaf);
+        }
+
+        /* chrome inverts on the light slide */
+        body.light-stage .counter {
+            color: rgba(0, 0, 0, .3);
+        }
+
+        body.light-stage .dock,
+        body.light-stage .connect-btn {
+            background: rgba(255, 255, 255, .6);
+            border-color: rgba(0, 0, 0, .08);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, .12);
+        }
+
+        body.light-stage .dock button.arrow,
+        body.light-stage .connect-btn {
+            color: rgba(0, 0, 0, .5);
+        }
+
+        body.light-stage .dot {
+            background: rgba(0, 0, 0, .22);
+        }
+
+        body.light-stage .dot.on {
+            background: var(--gold-deep);
+        }
+
+        body.light-stage .progress {
+            background: rgba(0, 0, 0, .08);
+        }
+
+        /* ───────────── DECK + KEYNOTE TRANSITION ───────────── */
+        .deck {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .slide {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: clamp(56px, 8vh, 110px) clamp(24px, 6vw, 96px);
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(1.04);
+            filter: blur(14px);
+            transition: opacity .85s var(--ease), transform .85s var(--ease), filter .85s var(--ease);
+            will-change: opacity, transform, filter;
+        }
+
+        .slide.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: scale(1);
+            filter: blur(0);
+        }
+
+        .slide.exit-back {
+            opacity: 0;
+            transform: scale(.965);
+            filter: blur(14px);
+            transition: opacity .6s var(--ease), transform .6s var(--ease), filter .6s var(--ease);
+        }
+
+        /* content reveal atoms — Apple's slow lift + soften */
+        .rise {
+            opacity: 0;
+            transform: translateY(26px);
+            filter: blur(8px);
+            transition: opacity 1.05s var(--ease), transform 1.05s var(--ease), filter 1.05s var(--ease);
+        }
+
+        .slide.active .rise {
+            opacity: 1;
+            transform: translateY(0);
+            filter: blur(0);
+        }
+
+        .slide.active .d1 {
+            transition-delay: .22s;
+        }
+
+        .slide.active .d2 {
+            transition-delay: .40s;
+        }
+
+        .slide.active .d3 {
+            transition-delay: .58s;
+        }
+
+        .slide.active .d4 {
+            transition-delay: .76s;
+        }
+
+        .slide.active .d5 {
+            transition-delay: .94s;
+        }
+
+        /* ambient stage light behind hero content */
+        .glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: min(1100px, 95vw);
+            height: min(1100px, 95vw);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0;
+            transition: opacity 1.6s var(--ease) .1s;
+        }
+
+        .slide.active .glow {
+            opacity: 1;
+        }
+
+        .glow-green {
+            background: radial-gradient(circle, rgba(47, 156, 82, .22) 0%, rgba(20, 60, 30, .10) 38%, transparent 68%);
+        }
+
+        .glow-gold {
+            background: radial-gradient(circle, rgba(232, 180, 76, .20) 0%, rgba(120, 85, 20, .08) 40%, transparent 68%);
+        }
+
+        .glow-coral {
+            background: radial-gradient(circle, rgba(255, 107, 94, .18) 0%, rgba(120, 30, 25, .07) 40%, transparent 68%);
+        }
+
+        .glow-silver {
+            background: radial-gradient(circle, rgba(255, 255, 255, .10) 0%, rgba(255, 255, 255, .03) 40%, transparent 68%);
+        }
+
+        .stage {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 1180px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* ───────────── S1 · TITLE ───────────── */
+        #s1 .sub {
+            margin-top: clamp(20px, 2.6vw, 32px);
+        }
+
+        #s1 .heritage {
+            margin-top: clamp(34px, 4.5vw, 56px);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--dim);
+        }
+
+        #s1 .heritage::before,
+        #s1 .heritage::after {
+            content: '';
+            width: clamp(28px, 5vw, 64px);
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .22), transparent);
+        }
+
+        /* ───────────── S2 / S3 / S8 · STAT SLIDES ───────────── */
+        .stat-label {
+            margin-top: clamp(18px, 2.4vw, 30px);
+            font-size: clamp(15px, 1.5vw, 21px);
+            font-weight: 500;
+            color: var(--muted);
+        }
+
+        .stat-note {
+            margin-top: 10px;
+            font-size: clamp(13px, 1.15vw, 16px);
+            color: var(--dim);
+        }
+
+        #s3 .from {
+            font-size: clamp(30px, 4vw, 54px);
+            font-weight: 600;
+            letter-spacing: -.02em;
+            color: #3a3a3d;
+        }
+
+        #s3 .drop-line {
+            width: 1px;
+            height: clamp(48px, 8vh, 84px);
+            margin: clamp(14px, 2vh, 22px) auto;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, .05), var(--coral));
+        }
+
+        /* ───────────── S4 · PRODUCT CARD GRID ───────────── */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: clamp(12px, 1.2vw, 18px);
+            width: 100%;
+        }
+
+        .card {
+            position: relative;
+            overflow: hidden;
+            border-radius: clamp(18px, 1.8vw, 28px);
+            border: 1px solid rgba(255, 255, 255, .09);
+            padding: clamp(22px, 2.4vw, 36px);
+            min-height: clamp(260px, 42vh, 420px);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            text-align: left;
+            transition: transform .5s var(--ease), border-color .5s var(--ease);
+        }
+
+        .card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(255, 255, 255, .2);
+        }
+
+        .card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(255, 255, 255, .06), transparent 45%);
+            pointer-events: none;
+        }
+
+        .card:nth-child(1) {
+            background: linear-gradient(165deg, #3d1a5c 0%, #1a0b2a 55%, #0a0412 100%);
+        }
+
+        .card:nth-child(2) {
+            background: linear-gradient(165deg, #5c1f1f 0%, #2a0f0f 55%, #120707 100%);
+        }
+
+        .card:nth-child(3) {
+            background: linear-gradient(165deg, #4a4418 0%, #23200b 55%, #0f0e05 100%);
+        }
+
+        .card:nth-child(4) {
+            background: linear-gradient(165deg, #1e5c32 0%, #0f2c18 55%, #06140a 100%);
+        }
+
+        .card .region {
+            position: relative;
+            z-index: 1;
+            display: inline-flex;
+            align-self: flex-start;
+            padding: 5px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, .12);
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: .02em;
+            color: rgba(255, 255, 255, .78);
+            margin-bottom: auto;
+        }
+
+        .card .name {
+            position: relative;
+            z-index: 1;
+            font-size: clamp(19px, 1.9vw, 28px);
+            font-weight: 700;
+            letter-spacing: -.015em;
+            line-height: 1.25;
+            color: var(--text);
+            margin-top: clamp(20px, 3vw, 40px);
+        }
+
+        .card .note {
+            position: relative;
+            z-index: 1;
+            margin-top: 10px;
+            font-size: clamp(12px, 1.05vw, 15px);
+            font-weight: 400;
+            line-height: 1.65;
+            color: rgba(255, 255, 255, .55);
+        }
+
+        /* ───────────── S5 / S7 · MOMENT SLIDES ───────────── */
+        .ghost-year {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+            font-size: clamp(180px, 34vw, 520px);
+            font-weight: 800;
+            letter-spacing: -.05em;
+            color: rgba(255, 255, 255, .035);
+            user-select: none;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .lede {
+            margin-top: clamp(22px, 2.8vw, 34px);
+            max-width: 660px;
+        }
+
+        .orgs {
+            margin-top: clamp(34px, 4.4vw, 56px);
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .org {
+            padding: 9px 20px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(255, 255, 255, .10);
+            font-size: clamp(12px, 1.05vw, 15px);
+            font-weight: 500;
+            color: rgba(255, 255, 255, .7);
+        }
+
+        /* ───────────── S6 · THREE PILLARS ───────────── */
+        .pillars {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: clamp(12px, 1.4vw, 22px);
+            width: 100%;
+        }
+
+        .pillar {
+            border-radius: clamp(18px, 1.8vw, 28px);
+            border: 1px solid rgba(255, 255, 255, .09);
+            background: linear-gradient(165deg, rgba(255, 255, 255, .055), rgba(255, 255, 255, .012));
+            padding: clamp(26px, 3vw, 46px);
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            transition: transform .5s var(--ease), border-color .5s var(--ease);
+        }
+
+        .pillar:hover {
+            transform: translateY(-6px);
+            border-color: rgba(255, 255, 255, .2);
+        }
+
+        .pillar .icon {
+            width: clamp(38px, 3.4vw, 50px);
+            height: clamp(38px, 3.4vw, 50px);
+            border-radius: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: clamp(18px, 2.2vw, 28px);
+            font-size: clamp(18px, 1.7vw, 24px);
+        }
+
+        .pillar:nth-child(1) .icon {
+            background: linear-gradient(145deg, rgba(255, 107, 94, .28), rgba(255, 107, 94, .08));
+        }
+
+        .pillar:nth-child(2) .icon {
+            background: linear-gradient(145deg, rgba(232, 180, 76, .28), rgba(232, 180, 76, .08));
+        }
+
+        .pillar:nth-child(3) .icon {
+            background: linear-gradient(145deg, rgba(116, 214, 138, .28), rgba(116, 214, 138, .08));
+        }
+
+        .pillar .pt {
+            font-size: clamp(20px, 2vw, 30px);
+            font-weight: 700;
+            letter-spacing: -.015em;
+            color: var(--text);
+            margin-bottom: 14px;
+        }
+
+        .pillar .pd {
+            font-size: clamp(13px, 1.1vw, 16px);
+            font-weight: 400;
+            line-height: 1.7;
+            color: var(--muted);
+        }
+
+        /* ───────────── S9 · LIGHT CTA ───────────── */
+        #s9 {
+            background: var(--light-bg);
+            color: var(--light-text);
+        }
+
+        #s9 .headline {
+            color: var(--light-text);
+        }
+
+        #s9 .body-lg {
+            color: var(--light-muted);
+            margin-top: clamp(18px, 2.2vw, 28px);
+        }
+
+        #s9 .kicker {
+            color: var(--gold-deep);
+        }
+
+        .chips {
+            margin-top: clamp(30px, 3.8vw, 48px);
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .chip {
+            padding: 11px 24px;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, .05);
+            border: 1px solid rgba(0, 0, 0, .09);
+            font-size: clamp(13px, 1.1vw, 16px);
+            font-weight: 500;
+            color: rgba(0, 0, 0, .62);
+            transition: background .3s var(--ease-soft), transform .3s var(--ease);
+        }
+
+        .chip:hover {
+            background: rgba(0, 0, 0, .09);
+            transform: translateY(-2px);
+        }
+
+        /* ───────────── S10 · CLOSING ───────────── */
+        .qr-wrap {
+            width: clamp(140px, 15vw, 190px);
+            height: clamp(140px, 15vw, 190px);
+            background: var(--light-bg);
+            border-radius: clamp(20px, 2vw, 28px);
+            margin: 0 auto clamp(28px, 3.4vw, 44px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 500;
+            color: rgba(0, 0, 0, .35);
+            padding: 20px;
+            line-height: 1.65;
+            box-shadow: 0 24px 70px rgba(0, 0, 0, .6), 0 0 0 1px rgba(255, 255, 255, .08);
+        }
+
+        .url {
+            margin-top: 12px;
+            font-size: clamp(13px, 1.1vw, 16px);
+            font-weight: 400;
+            color: var(--dim);
+            letter-spacing: .01em;
+        }
+
+        /* ───────────── RESPONSIVE ───────────── */
+        @media (max-width: 900px) {
+            .card-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .card {
+                min-height: clamp(180px, 26vh, 240px);
+            }
+
+            .pillars {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .pillar {
+                padding: 20px 22px;
+            }
+
+            .pillar .icon {
+                margin-bottom: 12px;
+            }
+
+            .pillar .pd {
+                line-height: 1.55;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .card-grid {
+                grid-template-columns: 1fr;
+                max-height: 62vh;
+                overflow-y: auto;
+            }
+
+            .card {
+                min-height: 150px;
+            }
+        }
+
+        /* black screen — press B on any clicker to pull focus back to you */
+        .blackout {
+            position: fixed;
+            inset: 0;
+            z-index: 800;
+            background: #000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .4s var(--ease);
+        }
+
+        .blackout.on {
+            opacity: 1;
+            pointer-events: auto;
+            cursor: pointer;
+        }
+
+        /* ───────────── PAIRING OVERLAY ───────────── */
+        .pair {
+            position: fixed;
+            inset: 0;
+            z-index: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: rgba(0, 0, 0, .72);
+            backdrop-filter: blur(30px) saturate(160%);
+            -webkit-backdrop-filter: blur(30px) saturate(160%);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .4s var(--ease);
+        }
+
+        .pair.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .pair-card {
+            width: 100%;
+            max-width: 560px;
+            border-radius: 28px;
+            border: 1px solid rgba(255, 255, 255, .12);
+            background: #1c1c1e;
+            padding: clamp(28px, 4vw, 44px);
+            text-align: center;
+            box-shadow: 0 40px 120px rgba(0, 0, 0, .7);
+        }
+
+        .pair-card h3 {
+            font-size: clamp(22px, 2.4vw, 30px);
+            font-weight: 700;
+            letter-spacing: -.02em;
+        }
+
+        .pair-card .hint {
+            margin-top: 10px;
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--muted);
+        }
+
+        .pair-qr {
+            width: 188px;
+            height: 188px;
+            margin: 26px auto 0;
+            border-radius: 18px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+        }
+
+        .pair-qr canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .pair-url {
+            margin-top: 18px;
+            display: inline-block;
+            padding: 11px 20px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, .07);
+            border: 1px solid rgba(255, 255, 255, .1);
+            font-family: 'Inter', monospace;
+            font-size: clamp(14px, 1.4vw, 19px);
+            font-weight: 600;
+            color: var(--text);
+            word-break: break-all;
+        }
+
+        .pair-room {
+            margin-top: 22px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, .1);
+        }
+
+        .pair-room .lbl {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: .08em;
+            color: var(--dim);
+        }
+
+        .pair-room .code {
+            margin-top: 8px;
+            font-family: 'Inter', monospace;
+            font-size: clamp(30px, 3.6vw, 44px);
+            font-weight: 800;
+            letter-spacing: .18em;
+            color: var(--gold);
+        }
+
+        .pair-actions {
+            margin-top: 22px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .pair-actions button {
+            padding: 12px 22px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, .12);
+            background: rgba(255, 255, 255, .07);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background .25s var(--ease-soft);
+        }
+
+        .pair-actions button:hover {
+            background: rgba(255, 255, 255, .15);
+        }
+
+        .pair-actions button.primary {
+            background: var(--gold);
+            border-color: transparent;
+            color: #1d1d1f;
+            font-weight: 600;
+        }
+
+        .pair-state {
+            margin-top: 16px;
+            font-size: 13px;
+            color: var(--dim);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            .slide,
+            .slide.exit-back,
+            .rise,
+            .glow {
+                transition-duration: .2s !important;
+                filter: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="progress">
+        <div class="progress-fill" id="pf"></div>
+    </div>
+    <div class="counter num" id="ctr">1 / 10</div>
+
+    <div class="deck" id="deck">
+
+        <!-- S1 · TITLE -->
+        <div class="slide active" id="s1" data-stage="dark">
+            <div class="glow glow-green"></div>
+            <div class="stage">
+                <div class="kicker grad-gold rise d1">การอนุรักษ์ข้าวพันธุ์พื้นเมืองไทย</div>
+                <h1 class="display grad-silver rise d2">ข้าวที่กำลังหายไป</h1>
+                <p class="body-lg sub rise d3">มรดก 5,000 ปีของแผ่นดินนี้ กำลังเลือนหายไปในรุ่นเรา</p>
+                <div class="heritage rise d4"><span class="num">5,000 ปี</span></div>
+            </div>
+        </div>
+
+        <!-- S2 · THE SCALE -->
+        <div class="slide" id="s2" data-stage="dark">
+            <div class="glow glow-silver"></div>
+            <div class="stage">
+                <div class="kicker grad-gold rise d1">จุดเริ่มต้น</div>
+                <div class="stat num grad-silver rise d2" data-count="110000" data-duration="2000">0</div>
+                <div class="stat-label rise d3">สายพันธุ์ข้าวพื้นบ้านของไทย</div>
+                <div class="stat-note num rise d4">สำรวจเมื่อ พ.ศ. 2494</div>
+            </div>
+        </div>
+
+        <!-- S3 · THE LOSS -->
+        <div class="slide" id="s3" data-stage="dark">
+            <div class="glow glow-coral"></div>
+            <div class="stage">
+                <div class="from num rise d1">110,000</div>
+                <div class="drop-line rise d2"></div>
+                <div class="stat num grad-coral rise d3" data-count="10000" data-duration="1600" data-prefix="&lt;">0
+                </div>
+                <div class="stat-label rise d4">เหลืออยู่ในปัจจุบัน</div>
+                <div class="stat-note rise d5">หายไปกว่า 90% ภายในชีวิตคนรุ่นเดียว</div>
+            </div>
+        </div>
+
+        <!-- S4 · THE VARIETIES -->
+        <div class="slide" id="s4" data-stage="dark">
+            <div class="stage">
+                <div class="kicker grad-gold rise d1">สายพันธุ์ที่ยังเหลืออยู่</div>
+                <h2 class="headline grad-silver rise d1" style="margin-bottom:clamp(28px,3.6vw,52px)">สี่ภาค สี่มรดก</h2>
+                <div class="card-grid">
+                    <div class="card rise d2">
+                        <div class="region">ภาคเหนือ</div>
+                        <div class="name">ข้าวก่ำล้านนา</div>
+                        <div class="note">ภูมิปัญญา 700 ปี<br>ใช้ในพิธีกรรมและการแพทย์</div>
+                    </div>
+                    <div class="card rise d3">
+                        <div class="region">ภาคอีสาน</div>
+                        <div class="name">ข้าวหอมมะลิแดง</div>
+                        <div class="note">สุรินทร์<br>สารต้านอนุมูลอิสระสูง</div>
+                    </div>
+                    <div class="card rise d4">
+                        <div class="region">ภาคกลาง</div>
+                        <div class="name">ข้าวขาวตาแห้ง</div>
+                        <div class="note">ฉะเชิงเทรา<br>เมล็ดเรียว ร่วน รสดี</div>
+                    </div>
+                    <div class="card rise d5">
+                        <div class="region">ภาคใต้</div>
+                        <div class="name">ข้าวสังข์หยด</div>
+                        <div class="note">พัทลุง · GI แห่งแรกของไทย<br>มีสารกาบา บำรุงโลหิต</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- S5 · TURNING POINT -->
+        <div class="slide" id="s5" data-stage="dark">
+            <div class="ghost-year num">2510</div>
+            <div class="stage">
+                <div class="kicker grad-gold rise d1">จุดเปลี่ยน</div>
+                <h2 class="display grad-silver rise d2">การปฏิวัติเขียว</h2>
+                <p class="body-lg lede rise d3">เมื่อ 50 กว่าปีก่อน ไทยเปลี่ยนการเกษตรทั้งระบบ
+                    ข้าวพันธุ์ให้ผลผลิตสูงเข้ามาแทนที่ และข้าวพื้นเมืองก็ค่อย ๆ หายไปจากทุ่งนาอย่างเงียบที่สุด</p>
+            </div>
+        </div>
+
+        <!-- S6 · WHAT WE LOSE -->
+        <div class="slide" id="s6" data-stage="dark">
+            <div class="stage">
+                <div class="kicker grad-gold rise d1">สิ่งที่เรากำลังเสียไป</div>
+                <h2 class="headline grad-silver rise d1" style="margin-bottom:clamp(28px,3.6vw,52px)">ไม่ใช่แค่เมล็ดข้าว
+                </h2>
+                <div class="pillars">
+                    <div class="pillar rise d2">
+                        <div class="icon">✦</div>
+                        <div class="pt">สุขภาพ</div>
+                        <div class="pd">ข้าวพื้นเมืองสีม่วงและสีแดงมีสารต้านอนุมูลอิสระสูงกว่าข้าวขาวมาก
+                            ช่วยลดความเสี่ยงมะเร็ง เบาหวาน และโรคหัวใจ</div>
+                    </div>
+                    <div class="pillar rise d3">
+                        <div class="icon">◈</div>
+                        <div class="pt">วัฒนธรรม</div>
+                        <div class="pd">ข้าวแต่ละสายพันธุ์ผูกกับพิธีกรรมและภูมิปัญญาท้องถิ่น เมื่อข้าวหายไป
+                            วัฒนธรรมนั้นก็หายตามไปด้วย</div>
+                    </div>
+                    <div class="pillar rise d4">
+                        <div class="icon">◉</div>
+                        <div class="pt">ความมั่นคงอาหาร</div>
+                        <div class="pd">ข้าวพื้นเมืองทนแล้ง ทนน้ำท่วม และทนโรคได้ดีกว่า
+                            ความหลากหลายคือเกราะป้องกันวิกฤตที่เรากำลังทิ้งไป</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- S7 · HOPE -->
+        <div class="slide" id="s7" data-stage="dark">
+            <div class="glow glow-green"></div>
+            <div class="stage">
+                <div class="kicker grad-leaf rise d1">ทางออก</div>
+                <h2 class="display grad-leaf rise d2">ยังไม่สาย</h2>
+                <p class="body-lg lede rise d3">ทั่วประเทศมีคนที่กำลังเก็บรักษาเมล็ดพันธุ์เหล่านี้ไว้ — และทำสำเร็จ</p>
+                <div class="orgs rise d4">
+                    <span class="org latin">BioThai</span>
+                    <span class="org">กรมการข้าว</span>
+                    <span class="org">มูลนิธิชัยพัฒนา</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- S8 · THE INCENTIVE -->
+        <div class="slide" id="s8" data-stage="dark">
+            <div class="glow glow-gold"></div>
+            <div class="stage">
+                <div class="kicker grad-gold rise d1">แรงจูงใจ</div>
+                <div class="stat num grad-gold rise d2">3–5×</div>
+                <div class="stat-label rise d3">ราคาที่ข้าวพื้นเมืองขายได้ เทียบกับข้าวทั่วไป</div>
+                <div class="stat-note rise d4">ถ้าตลาดรองรับ เกษตรกรก็มีเหตุผลที่จะปลูกต่อ</div>
+            </div>
+        </div>
+
+        <!-- S9 · CALL TO ACTION -->
+        <div class="slide" id="s9" data-stage="light">
+            <div class="stage">
+                <div class="kicker rise d1">สิ่งที่คุณทำได้วันนี้</div>
+                <h2 class="display rise d2" style="color:var(--light-text)">เลือกข้าวพื้นเมือง</h2>
+                <p class="body-lg rise d3">ครั้งหน้าที่ซื้อข้าว — นั่นคือสิ่งที่คุณทำได้ทันที</p>
+                <div class="chips rise d4">
+                    <span class="chip">ข้าวสังข์หยด</span>
+                    <span class="chip">ข้าวก่ำ</span>
+                    <span class="chip">ข้าวไรซ์เบอร์รี</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- S10 · CLOSING -->
+        <div class="slide" id="s10" data-stage="dark">
+            <div class="glow glow-silver"></div>
+            <div class="stage">
+                <div class="qr-wrap rise d1">ใส่ QR code<br>เว็บของคุณที่นี่</div>
+                <h3 class="headline grad-silver rise d2">อยากรู้เพิ่ม?</h3>
+                <div class="url rise d3">วางลิงก์เว็บที่นี่</div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="dock">
+        <button class="arrow" id="prev" aria-label="สไลด์ก่อนหน้า">&#10094;</button>
+        <div class="dots" id="dots"></div>
+        <button class="arrow" id="next" aria-label="สไลด์ถัดไป">&#10095;</button>
+    </div>
+
+    <button class="connect-btn" id="connectBtn">เชื่อมมือถือ</button>
+
+    <div class="blackout" id="blackout"></div>
+
+    <div class="pair" id="pair">
+        <div class="pair-card">
+            <h3>คุมสไลด์จากมือถือ</h3>
+            <div class="hint" id="pairHint">สแกน QR ด้วยมือถือที่ต่อ Wi-Fi วงเดียวกัน</div>
+
+            <div class="pair-qr" id="pairQr"></div>
+            <div class="pair-url" id="pairUrl">—</div>
+
+            <div class="pair-room">
+                <div class="lbl">รหัสห้อง · สำหรับโหมดอินเทอร์เน็ต</div>
+                <div class="code num" id="pairRoom">——————</div>
+            </div>
+
+            <div class="pair-actions">
+                <button class="primary" id="cloudBtn">เปิดโหมดอินเทอร์เน็ต</button>
+                <button id="pairClose">ปิด</button>
+            </div>
+            <div class="pair-state" id="pairState">ยังไม่ได้เชื่อม</div>
+        </div>
+    </div>
+
+    <script src="deck-data.js"></script>
+    <script src="sync.js"></script>
+    <script>
+        const slides = document.querySelectorAll('.slide');
+        const total = slides.length;
+        let cur = 0;
+        let isAnimating = false;
+
+        // ── DOT NAV ──
+        const dotsWrap = document.getElementById('dots');
+        slides.forEach((_, i) => {
+            const b = document.createElement('button');
+            b.className = 'dot' + (i === 0 ? ' on' : '');
+            b.setAttribute('aria-label', 'ไปสไลด์ ' + (i + 1));
+            b.addEventListener('click', () => goTo(i));
+            dotsWrap.appendChild(b);
+        });
+        const dots = dotsWrap.querySelectorAll('.dot');
+
+        // ── COUNT UP ──
+        function animateCount(el) {
+            const target = parseInt(el.dataset.count);
+            const duration = parseInt(el.dataset.duration) || 1600;
+            const prefix = el.dataset.prefix || '';
+            const start = performance.now();
+            function ease(t) { return 1 - Math.pow(1 - t, 4); }
+            function frame(now) {
+                const t = Math.min((now - start) / duration, 1);
+                el.textContent = prefix + Math.round(ease(t) * target).toLocaleString('th-TH');
+                if (t < 1) requestAnimationFrame(frame);
+                else el.textContent = prefix + target.toLocaleString('th-TH');
+            }
+            requestAnimationFrame(frame);
+        }
+
+        // ── GO TO SLIDE ──
+        function goTo(n, broadcast = true) {
+            if (n < 0 || n >= total || isAnimating || n === cur) return;
+            isAnimating = true;
+
+            const prev = slides[cur];
+            prev.classList.add('exit-back');
+            prev.classList.remove('active');
+
+            cur = n;
+            const next = slides[cur];
+            next.classList.add('active');
+
+            next.querySelectorAll('[data-count]').forEach(el => {
+                el.textContent = (el.dataset.prefix || '') + '0';
+                setTimeout(() => animateCount(el), 500);
+            });
+
+            setTimeout(() => {
+                prev.classList.remove('exit-back');
+                isAnimating = false;
+            }, 850);
+
+            document.body.classList.toggle('light-stage', next.dataset.stage === 'light');
+            dots.forEach((d, i) => d.classList.toggle('on', i === cur));
+            document.getElementById('ctr').textContent = (cur + 1) + ' / ' + total;
+            document.getElementById('pf').style.width = ((cur + 1) / total * 100) + '%';
+
+            if (broadcast) sync.send({ type: 'goto', slide: cur });
+        }
+
+        document.getElementById('next').addEventListener('click', () => goTo(cur + 1));
+        document.getElementById('prev').addEventListener('click', () => goTo(cur - 1));
+        // ── KEYS · covers every USB presenter clicker ──
+        // clickers emit PageDown/PageUp for next/prev, F5 to start, Esc to end,
+        // and "b" or "." for a black screen. Nothing to install — the PC sees a keyboard.
+        const blackout = document.getElementById('blackout');
+
+        function toggleBlack(force) {
+            const on = force !== undefined ? force : !blackout.classList.contains('on');
+            blackout.classList.toggle('on', on);
+        }
+
+        document.addEventListener('keydown', e => {
+            const k = e.key;
+
+            if (k === 'Escape') {
+                if (blackout.classList.contains('on')) { e.preventDefault(); toggleBlack(false); return; }
+                pair.classList.remove('open');
+                return;
+            }
+
+            // blank the screen — the one control every presenter needs mid-talk
+            if (k === 'b' || k === 'B' || k === '.' || k === 'ๆ') { e.preventDefault(); toggleBlack(); return; }
+
+            if (blackout.classList.contains('on')) { e.preventDefault(); toggleBlack(false); return; }
+
+            if (k === 'ArrowRight' || k === 'ArrowDown' || k === ' ' || k === 'PageDown' || k === 'Enter') {
+                e.preventDefault(); goTo(cur + 1);
+            } else if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'PageUp' || k === 'Backspace') {
+                e.preventDefault(); goTo(cur - 1);
+            } else if (k === 'Home' || k === 'F5') {
+                e.preventDefault(); goTo(0);
+            } else if (k === 'End') {
+                e.preventDefault(); goTo(total - 1);
+            } else if (k === 'f' || k === 'F') {
+                e.preventDefault();
+                if (document.fullscreenElement) document.exitFullscreen();
+                else document.documentElement.requestFullscreen().catch(() => { });
+            }
+        });
+
+        blackout.addEventListener('click', () => toggleBlack(false));
+
+        let tx = 0;
+        document.addEventListener('touchstart', e => tx = e.touches[0].clientX, { passive: true });
+        document.addEventListener('touchend', e => {
+            const d = tx - e.changedTouches[0].clientX;
+            if (Math.abs(d) > 50) goTo(cur + (d > 0 ? 1 : -1));
+        });
+
+        // ── PHONE REMOTE ──
+        const connectBtn = document.getElementById('connectBtn');
+        const pair = document.getElementById('pair');
+
+        // the room code survives reloads so a paired phone stays paired
+        let room = localStorage.getItem('rice_room');
+        if (!room && window.DeckSync) {
+            room = DeckSync.randomRoom();
+            localStorage.setItem('rice_room', room);
+        }
+        document.getElementById('pairRoom').textContent = room || '——————';
+
+        // the remote is optional — a missing sync.js must never break the slides
+        const sync = window.DeckSync
+            ? DeckSync.create({
+                role: 'deck',
+                room,
+                onMessage(msg) {
+                    if (msg.type === 'hello') { sync.send({ type: 'state', slide: cur }); return; }
+                    if (typeof msg.slide === 'number') goTo(msg.slide, false);
+                },
+                onStatus(st) {
+                    const live = st.lan || st.cloud;
+                    connectBtn.classList.toggle('connected', live);
+                    connectBtn.textContent = live ? 'เชื่อมแล้ว' : 'เชื่อมมือถือ';
+                    document.getElementById('pairState').textContent = st.lan ? '● เชื่อมแล้วผ่าน Wi-Fi'
+                        : st.cloud ? '● เชื่อมแล้วผ่านอินเทอร์เน็ต'
+                            : st.cloudPending ? 'กำลังเชื่อมต่อ…'
+                                : 'ยังไม่ได้เชื่อม';
+                }
+            })
+            : { send() { }, enableCloud: () => Promise.reject(new Error('sync.js missing')), disableCloud() { } };
+
+        // ── pairing overlay ──
+        // relative to this page's folder, so it survives a GitHub Pages subpath (/user/repo/)
+        const onWeb = /^https?:$/.test(location.protocol);
+        const baseDir = location.href.split('#')[0].split('?')[0].replace(/[^/]*$/, '');
+        const ctrlUrl = onWeb ? baseDir + 'controller.html?room=' + room : null;
+
+        document.getElementById('pairUrl').textContent = ctrlUrl || 'เปิดหน้านี้จากเว็บก่อน';
+        if (!onWeb) {
+            document.getElementById('pairHint').innerHTML =
+                'ไฟล์นี้เปิดจากเครื่องโดยตรง จึงยังจับคู่ไม่ได้<br>อัปโหลดขึ้นเว็บ แล้วเปิดลิงก์นั้นแทน';
+        }
+
+        // hosted copy has no local server, so the internet relay is the only path — connect on its own
+        if (onWeb) {
+            setTimeout(() => {
+                if (!sync.status || !sync.status.lan) sync.enableCloud(room).catch(() => { });
+            }, 1200);
+        }
+
+        function drawQr() {
+            const box = document.getElementById('pairQr');
+            if (!ctrlUrl || box.dataset.done) return;
+            const render = () => {
+                box.innerHTML = '';
+                const c = document.createElement('canvas');
+                box.appendChild(c);
+                window.QRCode.toCanvas(c, ctrlUrl, { width: 320, margin: 0 }, err => {
+                    if (err) box.innerHTML = '<span style="color:#888;font-size:12px">ใช้ลิงก์ด้านล่างแทน</span>';
+                    else box.dataset.done = '1';
+                });
+            };
+            if (window.QRCode) return render();
+            const s = document.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
+            s.onload = render;
+            s.onerror = () => { box.innerHTML = '<span style="color:#888;font-size:12px">ใช้ลิงก์ด้านล่างแทน</span>'; };
+            document.head.appendChild(s);
+        }
+
+        connectBtn.addEventListener('click', () => { pair.classList.add('open'); drawQr(); });
+        document.getElementById('pairClose').addEventListener('click', () => pair.classList.remove('open'));
+        pair.addEventListener('click', e => { if (e.target === pair) pair.classList.remove('open'); });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') pair.classList.remove('open');
+        });
+
+        document.getElementById('cloudBtn').addEventListener('click', e => {
+            e.target.textContent = 'กำลังเชื่อม…';
+            sync.enableCloud(room)
+                .then(() => { e.target.textContent = 'อินเทอร์เน็ตพร้อมใช้'; })
+                .catch(() => { e.target.textContent = 'เชื่อมไม่สำเร็จ ลองใหม่'; });
+        });
+
+        document.getElementById('pf').style.width = (1 / total * 100) + '%';
+    </script>
+</body>
+
+</html>

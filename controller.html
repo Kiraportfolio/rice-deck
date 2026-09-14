@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>รีโมทนำเสนอ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --bg: #000;
+            --panel: rgba(255, 255, 255, .06);
+            --panel-hi: rgba(255, 255, 255, .12);
+            --line: rgba(255, 255, 255, .10);
+            --text: #f5f5f7;
+            --muted: #86868b;
+            --gold: #e8b44c;
+            --leaf: #74d68a;
+            --ease: cubic-bezier(.22, .61, .36, 1);
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Noto Sans Thai', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            overscroll-behavior: none;
+            display: flex;
+            flex-direction: column;
+            padding: calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 14px);
+            gap: 12px;
+        }
+
+        .num {
+            font-family: 'Inter', sans-serif;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ── status bar ── */
+        .bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--muted);
+        }
+
+        .led {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #5a5a5e;
+            transition: background .3s, box-shadow .3s;
+        }
+
+        .led.on {
+            background: var(--leaf);
+            box-shadow: 0 0 10px rgba(116, 214, 138, .8);
+        }
+
+        .pill-btn {
+            border: 1px solid var(--line);
+            background: var(--panel);
+            color: var(--muted);
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 8px 14px;
+            border-radius: 999px;
+            cursor: pointer;
+        }
+
+        .pill-btn:active {
+            background: var(--panel-hi);
+        }
+
+        /* ── current slide ── */
+        .now {
+            flex-shrink: 0;
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            background: linear-gradient(165deg, rgba(255, 255, 255, .07), rgba(255, 255, 255, .02));
+            padding: 16px 18px;
+        }
+
+        .now .idx {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: .06em;
+            color: var(--gold);
+        }
+
+        .now .title {
+            margin-top: 6px;
+            font-size: 23px;
+            font-weight: 700;
+            letter-spacing: -.02em;
+            line-height: 1.25;
+        }
+
+        /* ── notes ── */
+        .notes {
+            flex: 1;
+            min-height: 90px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            background: rgba(255, 255, 255, .03);
+            padding: 16px 18px;
+        }
+
+        .notes h4 {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: .1em;
+            color: #5a5a5e;
+            margin-bottom: 10px;
+        }
+
+        .notes p {
+            font-size: 16px;
+            font-weight: 400;
+            line-height: 1.75;
+            color: #d2d2d7;
+        }
+
+        .notes .next-up {
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid var(--line);
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .notes .next-up b {
+            color: #a8a8ad;
+            font-weight: 600;
+        }
+
+        /* ── jump grid ── */
+        .grid {
+            flex-shrink: 0;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 7px;
+        }
+
+        .grid button {
+            aspect-ratio: 1.45;
+            border-radius: 13px;
+            border: 1px solid var(--line);
+            background: var(--panel);
+            color: var(--muted);
+            font-family: 'Inter', sans-serif;
+            font-variant-numeric: tabular-nums;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background .25s var(--ease), color .25s var(--ease), transform .15s var(--ease);
+        }
+
+        .grid button:active {
+            transform: scale(.92);
+        }
+
+        .grid button.on {
+            background: var(--gold);
+            border-color: var(--gold);
+            color: #1d1d1f;
+        }
+
+        /* ── transport ── */
+        .transport {
+            flex-shrink: 0;
+            display: grid;
+            grid-template-columns: 1fr 1.45fr;
+            gap: 10px;
+        }
+
+        .transport button {
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            font-family: inherit;
+            font-size: 18px;
+            font-weight: 600;
+            padding: 22px 0;
+            cursor: pointer;
+            transition: transform .15s var(--ease), background .25s var(--ease);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+        }
+
+        .transport button:active {
+            transform: scale(.96);
+        }
+
+        .transport button:disabled {
+            opacity: .3;
+        }
+
+        #prev {
+            background: var(--panel);
+            color: var(--text);
+        }
+
+        #next {
+            background: linear-gradient(165deg, #ffd978, var(--gold));
+            border-color: transparent;
+            color: #1d1d1f;
+        }
+
+        /* ── pairing sheet ── */
+        .sheet {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            background: rgba(0, 0, 0, .75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .sheet[hidden] {
+            display: none;
+        }
+
+        .sheet-card {
+            width: 100%;
+            max-width: 360px;
+            border: 1px solid var(--line);
+            border-radius: 26px;
+            background: #1c1c1e;
+            padding: 26px 22px;
+            text-align: center;
+        }
+
+        .sheet-card h3 {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -.02em;
+        }
+
+        .sheet-card p {
+            margin-top: 10px;
+            font-size: 14px;
+            line-height: 1.65;
+            color: var(--muted);
+        }
+
+        .sheet-card input {
+            width: 100%;
+            margin-top: 18px;
+            padding: 15px;
+            border-radius: 15px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, .06);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: .22em;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .sheet-card input:focus {
+            outline: none;
+            border-color: var(--gold);
+        }
+
+        .sheet-card .go {
+            width: 100%;
+            margin-top: 12px;
+            padding: 15px;
+            border: none;
+            border-radius: 15px;
+            background: var(--gold);
+            color: #1d1d1f;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .sheet-card .close {
+            margin-top: 14px;
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-family: inherit;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        @media (max-height: 680px) {
+            .now .title {
+                font-size: 19px;
+            }
+
+            .notes p {
+                font-size: 14px;
+                line-height: 1.6;
+            }
+
+            .transport button {
+                padding: 17px 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="bar">
+        <div class="status"><span class="led" id="led"></span><span id="statusText">กำลังเชื่อมต่อ…</span></div>
+        <button class="pill-btn" id="pairBtn">โหมดอินเทอร์เน็ต</button>
+    </div>
+
+    <div class="now">
+        <div class="idx num" id="idx">1 / 10</div>
+        <div class="title" id="title">—</div>
+    </div>
+
+    <div class="notes">
+        <h4>โน้ตผู้พูด</h4>
+        <p id="note">—</p>
+        <div class="next-up" id="nextUp"></div>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="transport">
+        <button id="prev">‹ ก่อนหน้า</button>
+        <button id="next">ถัดไป ›</button>
+    </div>
+
+    <div class="sheet" id="sheet" hidden>
+        <div class="sheet-card">
+            <h3>เชื่อมผ่านอินเทอร์เน็ต</h3>
+            <p>ใช้เมื่อมือถือกับคอมไม่ได้อยู่ Wi-Fi วงเดียวกัน<br>ใส่รหัสห้องที่แสดงบนจอนำเสนอ</p>
+            <input id="roomInput" maxlength="6" placeholder="ABC123" autocomplete="off" autocapitalize="characters"
+                spellcheck="false">
+            <button class="go" id="joinBtn">เชื่อมต่อ</button>
+            <button class="close" id="closeSheet">ปิด</button>
+        </div>
+    </div>
+
+    <script src="deck-data.js"></script>
+    <script src="sync.js"></script>
+    <script>
+        const SLIDES = window.DECK_SLIDES;
+        const total = SLIDES.length;
+        let cur = 0;
+
+        const $ = id => document.getElementById(id);
+
+        // ── jump grid ──
+        SLIDES.forEach((s, i) => {
+            const b = document.createElement('button');
+            b.textContent = s.n;
+            b.title = s.title;
+            b.addEventListener('click', () => go(i));
+            $('grid').appendChild(b);
+        });
+        const cells = $('grid').querySelectorAll('button');
+
+        function render() {
+            const s = SLIDES[cur];
+            $('idx').textContent = (cur + 1) + ' / ' + total;
+            $('title').textContent = s.title;
+            $('note').textContent = s.note;
+            $('nextUp').innerHTML = cur + 1 < total
+                ? 'ถัดไป · <b>' + SLIDES[cur + 1].title + '</b>'
+                : 'สไลด์สุดท้าย';
+            cells.forEach((c, i) => c.classList.toggle('on', i === cur));
+            $('prev').disabled = cur === 0;
+            $('next').disabled = cur === total - 1;
+        }
+
+        // ── sync ──
+        const sync = DeckSync.create({
+            role: 'ctrl',
+            onMessage(msg) {
+                if (typeof msg.slide === 'number' && msg.slide !== cur) {
+                    cur = Math.max(0, Math.min(total - 1, msg.slide));
+                    render();
+                }
+            },
+            onStatus(st) {
+                const live = st.lan || st.cloud;
+                $('led').classList.toggle('on', live);
+                $('statusText').textContent = st.lan ? 'เชื่อมแล้ว · Wi-Fi'
+                    : st.cloud ? 'เชื่อมแล้ว · อินเทอร์เน็ต'
+                        : st.cloudPending ? 'กำลังเชื่อมต่อ…'
+                            : 'ยังไม่ได้เชื่อม';
+                if (st.room) $('pairBtn').textContent = 'ห้อง ' + st.room;
+            }
+        });
+
+        function go(n) {
+            if (n < 0 || n >= total) return;
+            cur = n;
+            render();
+            if (navigator.vibrate) navigator.vibrate(8);
+            sync.send({ type: 'goto', slide: cur });
+        }
+
+        $('next').addEventListener('click', () => go(cur + 1));
+        $('prev').addEventListener('click', () => go(cur - 1));
+
+        // volume-style swipe on the notes area
+        let ty = 0, tx = 0;
+        document.addEventListener('touchstart', e => {
+            tx = e.touches[0].clientX; ty = e.touches[0].clientY;
+        }, { passive: true });
+        document.addEventListener('touchend', e => {
+            const dx = tx - e.changedTouches[0].clientX;
+            const dy = Math.abs(ty - e.changedTouches[0].clientY);
+            if (Math.abs(dx) > 60 && dy < 50) go(cur + (dx > 0 ? 1 : -1));
+        });
+
+        // ── cloud pairing ──
+        $('pairBtn').addEventListener('click', () => $('sheet').hidden = false);
+        $('closeSheet').addEventListener('click', () => $('sheet').hidden = true);
+        $('joinBtn').addEventListener('click', () => {
+            const code = $('roomInput').value.trim().toUpperCase();
+            if (code.length < 4) { $('roomInput').focus(); return; }
+            $('sheet').hidden = true;
+            $('statusText').textContent = 'กำลังเชื่อมต่อ…';
+            sync.enableCloud(code)
+                .then(() => sync.send({ type: 'hello' }))
+                .catch(() => { $('statusText').textContent = 'เชื่อมไม่สำเร็จ'; });
+        });
+
+        // room code arrives in the QR link: controller.html?room=ABC123
+        const urlRoom = (new URLSearchParams(location.search).get('room') || '').toUpperCase();
+        if (urlRoom) {
+            $('roomInput').value = urlRoom;
+            $('pairBtn').textContent = 'ห้อง ' + urlRoom;
+            // scanning the QR should just work — no extra tap to connect
+            setTimeout(() => {
+                if (!sync.status.lan) {
+                    sync.enableCloud(urlRoom)
+                        .then(() => sync.send({ type: 'hello' }))
+                        .catch(() => { $('statusText').textContent = 'เชื่อมไม่สำเร็จ'; });
+                }
+            }, 1000);
+        }
+
+        render();
+        setTimeout(() => sync.send({ type: 'hello' }), 700);
+    </script>
+</body>
+
+</html>
